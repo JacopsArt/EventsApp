@@ -1,4 +1,3 @@
-// src/pages/EventsPage.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -7,6 +6,8 @@ import {
   Text,
   Button,
   useDisclosure,
+  Grid,
+  Flex,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { useEvents } from "../EventsContext";
@@ -64,32 +65,52 @@ export const EventsPage = () => {
         onChange={handleCategoryChange}
         categories={categories}
       />
-      {filteredEvents.map((event) => (
-        <Link
-          to={`/event/${event.id}`}
-          key={event.id}
-          style={{ textDecoration: "none" }}
-        >
-          <Box
-            p={4}
-            borderWidth="1px"
-            borderRadius="lg"
-            overflow="hidden"
-            mb="4"
+      <Grid
+        templateColumns={{
+          base: "repeat(1, 1fr)",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(3, 1fr)",
+        }}
+        gap={6}
+        alignItems="center" // Hiermee worden alle griditems netjes uitgelijnd
+      >
+        {filteredEvents.map((event) => (
+          <Link
+            to={`/event/${event.id}`}
+            key={event.id}
+            style={{ textDecoration: "none" }}
           >
-            <Heading as="h2" size="lg">
-              {event.title}
-            </Heading>
-            <Image src={event.image} alt={event.title} mb="2" />
-            <Text fontSize="md">Description: {event.description}</Text>
-            <Text fontSize="md">Start Time: {event.startTime}</Text>
-            <Text fontSize="md">End Time: {event.endTime}</Text>
-            <Text fontSize="md">
-              Categories: {getCategoryNames(event.categoryIds)}
-            </Text>
-          </Box>
-        </Link>
-      ))}
+            <Box
+              p={4}
+              borderWidth="1px"
+              borderRadius="lg"
+              overflow="hidden"
+              mb="4"
+            >
+              <Flex direction="column" alignItems="center">
+                <Heading as="h2" size="lg" mb="2">
+                  {event.title}
+                </Heading>
+                <Image
+                  src={event.image}
+                  alt={event.title}
+                  maxW="100%"
+                  h="200px" // Hiermee wordt de hoogte van de afbeelding ingesteld
+                  mb="2"
+                />
+                <Text fontSize="md" textAlign="center">
+                  {event.description}
+                </Text>
+                <Text fontSize="md">Start Time: {event.startTime}</Text>
+                <Text fontSize="md">End Time: {event.endTime}</Text>
+                <Text fontSize="md">
+                  Categories: {getCategoryNames(event.categoryIds)}
+                </Text>
+              </Flex>
+            </Box>
+          </Link>
+        ))}
+      </Grid>
       <Button colorScheme="blue" mt="4" onClick={onOpen}>
         Add Event
       </Button>
