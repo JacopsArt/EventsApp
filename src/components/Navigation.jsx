@@ -1,17 +1,18 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Box, Flex, Button } from "@chakra-ui/react";
 
-export const Navigation = () => {
+const Navigation = () => {
   return (
-    <nav>
-      <ul>
-        <li>
-          <Link to="/">Events</Link>
-        </li>
-        <li>
-          <Link to="/event/1">Event</Link>
-        </li>
-      </ul>
-    </nav>
+    <Box borderBottom="1px solid black" py="2" px="3rem">
+      <Flex justify="space-between" align="center">
+        <Link to="/">
+          <Button colorScheme="blue">Events</Button>
+        </Link>
+      </Flex>
+    </Box>
   );
 };
+
+export default Navigation;
+

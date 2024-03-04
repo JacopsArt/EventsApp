@@ -55,16 +55,24 @@ export const EventsPage = () => {
   }
 
   return (
-    <Box>
-      <Heading as="h1" size="xl" mb="4">
-        List of Events
-      </Heading>
-      <SearchInput value={searchTerm} onChange={handleSearchChange} />
-      <CategoryFilter
-        value={selectedCategory}
-        onChange={handleCategoryChange}
-        categories={categories}
-      />
+    <Box maxW="1200px" mx="auto" px="2rem">
+      {/* Searchfilter en Categoryfilter */}
+      <Box mb="2rem" textAlign="center">
+        <Heading as="h2" size="lg" mb="2">
+          List of Events
+        </Heading>
+        <Box mb="1rem">
+          <SearchInput value={searchTerm} onChange={handleSearchChange} />
+        </Box>
+        <Box>
+          <CategoryFilter
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            categories={categories}
+          />
+        </Box>
+      </Box>
+      {/* Grid met Events */}
       <Grid
         templateColumns={{
           base: "repeat(1, 1fr)",
@@ -72,7 +80,7 @@ export const EventsPage = () => {
           md: "repeat(3, 1fr)",
         }}
         gap={6}
-        alignItems="center" // Hiermee worden alle griditems netjes uitgelijnd
+        alignItems="center"
       >
         {filteredEvents.map((event) => (
           <Link
@@ -95,7 +103,7 @@ export const EventsPage = () => {
                   src={event.image}
                   alt={event.title}
                   maxW="100%"
-                  h="200px" // Hiermee wordt de hoogte van de afbeelding ingesteld
+                  h="200px"
                   mb="2"
                 />
                 <Text fontSize="md" textAlign="center">
@@ -111,6 +119,7 @@ export const EventsPage = () => {
           </Link>
         ))}
       </Grid>
+      {/* Add Event knop */}
       <Button colorScheme="blue" mt="4" onClick={onOpen}>
         Add Event
       </Button>
