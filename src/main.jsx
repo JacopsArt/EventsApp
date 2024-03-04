@@ -14,21 +14,33 @@ const Main = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const response = await fetch("http://localhost:3000/events");
-      const eventData = await response.json();
-      setEvents(eventData);
+      try {
+        const response = await fetch("http://localhost:3000/events");
+        const eventData = await response.json();
+        setEvents(eventData);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
     };
 
     const fetchUsers = async () => {
-      const response = await fetch("http://localhost:3000/users");
-      const userData = await response.json();
-      setUsers(userData);
+      try {
+        const response = await fetch("http://localhost:3000/users");
+        const userData = await response.json();
+        setUsers(userData);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
     };
 
     const fetchCategories = async () => {
-      const response = await fetch("http://localhost:3000/categories");
-      const categoryData = await response.json();
-      setCategories(categoryData);
+      try {
+        const response = await fetch("http://localhost:3000/categories");
+        const categoryData = await response.json();
+        setCategories(categoryData);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
     };
 
     fetchEvents();
@@ -43,7 +55,13 @@ const Main = () => {
       children: [
         {
           path: "/",
-          element: <EventsPage events={events} categories={categories} />,
+          element: (
+            <EventsPage
+              events={events}
+              categories={categories}
+              setCategories={setCategories}
+            />
+          ),
         },
         {
           path: "event/:eventId",

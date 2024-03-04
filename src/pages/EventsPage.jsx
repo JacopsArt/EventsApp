@@ -1,3 +1,4 @@
+// src/pages/EventsPage.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -56,7 +57,6 @@ export const EventsPage = () => {
 
   return (
     <Box maxW="1200px" mx="auto" px="2rem">
-      {/* Searchfilter en Categoryfilter */}
       <Box mb="2rem" textAlign="center">
         <Heading as="h2" size="lg" mb="2">
           List of Events
@@ -72,7 +72,7 @@ export const EventsPage = () => {
           />
         </Box>
       </Box>
-      {/* Grid met Events */}
+
       <Grid
         templateColumns={{
           base: "repeat(1, 1fr)",
@@ -119,7 +119,7 @@ export const EventsPage = () => {
           </Link>
         ))}
       </Grid>
-      {/* Add Event knop */}
+
       <Button colorScheme="blue" mt="4" onClick={onOpen}>
         Add Event
       </Button>
