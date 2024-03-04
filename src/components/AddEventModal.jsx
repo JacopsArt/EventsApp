@@ -1,18 +1,32 @@
 // src/components/AddEventModal.jsx
-import React, { useState } from 'react';
-import { useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, FormControl, FormLabel, Input, Textarea } from '@chakra-ui/react';
+import React, { useState } from "react";
+import {
+  useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+} from "@chakra-ui/react";
 
-const AddEventModal = ({ isOpen, onClose, fetchEvents }) => {
+const AddEventModal = ({ isOpen, onClose, setEvents, categories }) => {
   const toast = useToast();
   const [newEvent, setNewEvent] = useState({
-    createdBy: '',
-    title: '',
-    description: '',
-    image: '',
-    categoryIds: '',
-    location: '',
-    startTime: '',
-    endTime: ''
+    createdBy: "",
+    title: "",
+    description: "",
+    image: "",
+    categoryIds: [],
+    location: "",
+    startTime: "",
+    endTime: "",
   });
 
   const handleInputChange = (e) => {
@@ -21,35 +35,33 @@ const AddEventModal = ({ isOpen, onClose, fetchEvents }) => {
   };
 
   const handleAddEvent = async () => {
-    newEvent.categoryIds = newEvent.categoryIds.split(',').map(Number);
-
     try {
-      const response = await fetch('http://localhost:3000/events', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/events", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(newEvent)
+        body: JSON.stringify(newEvent),
       });
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
 
       toast({
-        title: 'Event Added',
+        title: "Event Added",
         description: "The new event has been successfully added.",
-        status: 'success',
+        status: "success",
         duration: 5000,
         isClosable: true,
       });
       onClose();
-      await fetchEvents(); // Update events list
+      setEvents((prevEvents) => [...prevEvents, newEvent]); // Add the new event to the events list
     } catch (error) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: `Failed to add event: ${error.message}`,
-        status: 'error',
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -81,7 +93,11 @@ const AddEventModal = ({ isOpen, onClose, fetchEvents }) => {
           </FormControl>
           <FormControl id="event-categoryIds" mt={4}>
             <FormLabel>Category IDs</FormLabel>
-            <Input name="categoryIds" placeholder="Enter comma-separated IDs" onChange={handleInputChange} />
+            <Input
+              name="categoryIds"
+              placeholder="Enter comma-separated IDs"
+              onChange={handleInputChange}
+            />
           </FormControl>
           <FormControl id="event-location" mt={4}>
             <FormLabel>Location</FormLabel>
@@ -89,17 +105,29 @@ const AddEventModal = ({ isOpen, onClose, fetchEvents }) => {
           </FormControl>
           <FormControl id="event-startTime" mt={4}>
             <FormLabel>Start Time</FormLabel>
-            <Input name="startTime" type="datetime-local" onChange={handleInputChange} />
+            <Input
+              name="startTime"
+              type="datetime-local"
+              onChange={handleInputChange}
+            />
           </FormControl>
           <FormControl id="event-endTime" mt={4}>
             <FormLabel>End Time</FormLabel>
-            <Input name="endTime" type="datetime-local" onChange={handleInputChange} />
+            <Input
+              name="endTime"
+              type="datetime-local"
+              onChange={handleInputChange}
+            />
           </FormControl>
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={handleAddEvent}>Add Event</Button>
-          <Button variant="ghost" onClick={onClose}>Close</Button>
+          <Button colorScheme="blue" mr={3} onClick={handleAddEvent}>
+            Add Event
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            Close
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

@@ -1,3 +1,4 @@
+// components/EditFormModal.jsx
 import React, { useState, useEffect } from "react";
 import {
   Modal,
@@ -25,6 +26,7 @@ const formatDate = (dateStr) => {
 
 const EditFormModal = ({ isOpen, onClose, event, onSave }) => {
   const [editEvent, setEditEvent] = useState({ ...event });
+
   const toast = useToast();
 
   useEffect(() => {
@@ -123,7 +125,22 @@ const EditFormModal = ({ isOpen, onClose, event, onSave }) => {
               onChange={handleInputChange}
             />
           </FormControl>
-          {/* Voeg hier aanvullende form controls toe indien nodig */}
+          <FormControl id="event-createdBy" mt={4}>
+            <FormLabel>Created By</FormLabel>
+            <Input
+              name="createdBy"
+              value={editEvent.createdBy || ""}
+              onChange={handleInputChange}
+            />
+          </FormControl>
+          <FormControl id="event-categories" mt={4}>
+            <FormLabel>Categories</FormLabel>
+            <Input
+              name="categories"
+              value={editEvent.categories || ""}
+              onChange={handleInputChange}
+            />
+          </FormControl>
         </ModalBody>
         <ModalFooter>
           <Button colorScheme="blue" onClick={handleSubmit}>

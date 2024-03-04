@@ -1,4 +1,4 @@
-// src/pages/EventPage.jsx
+// pages/EventPage.jsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -7,11 +7,18 @@ import {
   Image,
   Text,
   Button,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
   useDisclosure,
 } from "@chakra-ui/react";
 import EditFormModal from "../components/EditFormModal";
 
-const EventPage = ({ events, users, categories }) => {
+const EventPage = ({ events, users, categories, onUpdateEvent }) => {
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
   const [creator, setCreator] = useState(null);
@@ -29,19 +36,24 @@ const EventPage = ({ events, users, categories }) => {
     }
   }, [events, users, eventId]);
 
-  const getCategoryNames = (categoryIds) => {
-    return categoryIds
-      .map((id) => {
-        const category = categories.find((cat) => cat.id === id);
-        return category ? category.name : "Unknown";
-      })
-      .join(", ");
-  };
-
-  const handleEdit = (updatedEvent) => {
+  const handleEdit = async (updatedEvent) => {
     setIsEditOpen(false);
     setEvent(updatedEvent);
     onClose();
+    // Pass the updated event to the parent component
+    onUpdateEvent(updatedEvent);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await fetch(`http://localhost:3000/events/${eventId}`, {
+        method: "DELETE",
+      });
+      onClose();
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
   };
 
   if (!event) {
@@ -61,15 +73,32 @@ const EventPage = ({ events, users, categories }) => {
       <Text>Description: {event.description}</Text>
       <Text>Start Time: {event.startTime}</Text>
       <Text>End Time: {event.endTime}</Text>
-      <Text>Categories: {getCategoryNames(event.categoryIds)}</Text>
       <Button onClick={() => setIsEditOpen(true)}>Edit</Button>
-
+      <Button colorScheme="red" onClick={onOpen}>
+        Delete
+      </Button>
       <EditFormModal
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         event={event}
         onSave={handleEdit}
       />
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Delete Event</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>Are you sure you want to delete this event?</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" onClick={handleDelete}>
+              Delete
+            </Button>
+            <Button onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };

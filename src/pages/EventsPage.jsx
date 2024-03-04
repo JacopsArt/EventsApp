@@ -1,4 +1,4 @@
-// src/pages/EventsPage.jsx
+// pages/EventsPage.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -11,13 +11,11 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import { useEvents } from "../EventsContext";
 import AddEventModal from "../components/AddEventModal";
 import SearchInput from "../components/SearchInput";
 import CategoryFilter from "../components/CategoryFilter";
 
-export const EventsPage = () => {
-  const { events, categories } = useEvents();
+export const EventsPage = ({ events, setEvents, categories }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -42,21 +40,9 @@ export const EventsPage = () => {
     return (titleMatch || descriptionMatch) && categoryMatch;
   });
 
-  const getCategoryNames = (categoryIds) => {
-    if (!categories || !categoryIds || !Array.isArray(categoryIds)) {
-      return "No categories";
-    }
-    return categoryIds
-      .map((id) => categories.find((cat) => cat.id === id)?.name || "Unknown")
-      .join(", ");
-  };
-
-  if (!filteredEvents.length) {
-    return <Box>No events found</Box>;
-  }
-
   return (
     <Box maxW="1200px" mx="auto" px="2rem">
+      {/* Search and Category Filters */}
       <Box mb="2rem" textAlign="center">
         <Heading as="h2" size="lg" mb="2">
           List of Events
@@ -72,7 +58,7 @@ export const EventsPage = () => {
           />
         </Box>
       </Box>
-
+      {/* Events Grid */}
       <Grid
         templateColumns={{
           base: "repeat(1, 1fr)",
@@ -111,19 +97,32 @@ export const EventsPage = () => {
                 </Text>
                 <Text fontSize="md">Start Time: {event.startTime}</Text>
                 <Text fontSize="md">End Time: {event.endTime}</Text>
+                <Text fontSize="md">Created By: {event.createdBy}</Text>
                 <Text fontSize="md">
-                  Categories: {getCategoryNames(event.categoryIds)}
+                  Categories:{" "}
+                  {event.categoryIds
+                    .map(
+                      (categoryId) =>
+                        categories.find((cat) => cat.id === categoryId)?.name ||
+                        "Unknown"
+                    )
+                    .join(", ")}
                 </Text>
               </Flex>
             </Box>
           </Link>
         ))}
       </Grid>
-
+      {/* Add Event Button */}
       <Button colorScheme="blue" mt="4" onClick={onOpen}>
         Add Event
       </Button>
-      <AddEventModal isOpen={isOpen} onClose={onClose} />
+      <AddEventModal
+        isOpen={isOpen}
+        onClose={onClose}
+        setEvents={setEvents}
+        categories={categories}
+      />
     </Box>
   );
 };

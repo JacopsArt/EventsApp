@@ -12,37 +12,37 @@ const Main = () => {
   const [users, setUsers] = useState([]);
   const [categories, setCategories] = useState([]);
 
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/events");
+      const eventData = await response.json();
+      setEvents(eventData);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/users");
+      const userData = await response.json();
+      setUsers(userData);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/categories");
+      const categoryData = await response.json();
+      setCategories(categoryData);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/events");
-        const eventData = await response.json();
-        setEvents(eventData);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
-
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/users");
-        const userData = await response.json();
-        setUsers(userData);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/categories");
-        const categoryData = await response.json();
-        setCategories(categoryData);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-
     fetchEvents();
     fetchUsers();
     fetchCategories();
@@ -58,8 +58,8 @@ const Main = () => {
           element: (
             <EventsPage
               events={events}
+              setEvents={setEvents}
               categories={categories}
-              setCategories={setCategories}
             />
           ),
         },
