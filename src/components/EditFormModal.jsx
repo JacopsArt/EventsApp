@@ -1,6 +1,7 @@
-// src/components/EditFormModal.jsx
-import React, { useState, useEffect } from "react";
+// src/components/AddEventModal.jsx
+import React, { useState } from "react";
 import {
+  useToast,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -13,51 +14,55 @@ import {
   FormLabel,
   Input,
   Textarea,
-  useToast,
 } from "@chakra-ui/react";
 
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toISOString().substring(0, 16);
-};
-
-const EditFormModal = ({ isOpen, onClose, event, onSave }) => {
-  const [editEvent, setEditEvent] = useState({ ...event });
+const AddEventModal = ({ isOpen, onClose, fetchEvents }) => {
   const toast = useToast();
-
-  useEffect(() => {
-    if (event) {
-      setEditEvent({
-        ...event,
-        startTime: formatDate(event.startTime),
-        endTime: formatDate(event.endTime),
-      });
-    }
-  }, [event]);
+  const [newEvent, setNewEvent] = useState({
+    createdBy: "",
+    title: "",
+    description: "",
+    image: "",
+    categoryIds: "",
+    location: "",
+    startTime: "",
+    endTime: "",
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditEvent({ ...editEvent, [name]: value });
+    setNewEvent({ ...newEvent, [name]: value });
   };
 
-  const handleSubmit = async () => {
+  const handleAddEvent = async () => {
+    newEvent.categoryIds = newEvent.categoryIds.split(",").map(Number);
+
     try {
-      const response = await fetch(`http://localhost:3000/events/${event.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editEvent),
+      const response = await fetch("http://localhost:3000/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newEvent),
       });
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
 
-      onSave(editEvent);
+      toast({
+        title: "Event Added",
+        description: "The new event has been successfully added.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
       onClose();
+      await fetchEvents(); // Update events list
     } catch (error) {
       toast({
-        title: "Error updating event.",
-        description: error.message,
+        title: "Error",
+        description: `Failed to add event: ${error.message}`,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -69,75 +74,61 @@ const EditFormModal = ({ isOpen, onClose, event, onSave }) => {
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Edit Event</ModalHeader>
+        <ModalHeader>Add New Event</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <FormControl id="event-title">
+          <FormControl id="event-createdBy">
+            <FormLabel>Created By</FormLabel>
+            <Input name="createdBy" onChange={handleInputChange} />
+          </FormControl>
+          <FormControl id="event-title" mt={4}>
             <FormLabel>Title</FormLabel>
-            <Input
-              name="title"
-              value={editEvent.title || ""}
-              onChange={handleInputChange}
-            />
+            <Input name="title" onChange={handleInputChange} />
           </FormControl>
           <FormControl id="event-description" mt={4}>
             <FormLabel>Description</FormLabel>
-            <Textarea
-              name="description"
-              value={editEvent.description || ""}
-              onChange={handleInputChange}
-            />
+            <Textarea name="description" onChange={handleInputChange} />
           </FormControl>
           <FormControl id="event-image" mt={4}>
             <FormLabel>Image URL</FormLabel>
+            <Input name="image" onChange={handleInputChange} />
+          </FormControl>
+          <FormControl id="event-categoryIds" mt={4}>
+            <FormLabel>Category IDs</FormLabel>
             <Input
-              name="image"
-              value={editEvent.image || ""}
+              name="categoryIds"
+              placeholder="Enter comma-separated IDs"
               onChange={handleInputChange}
             />
+          </FormControl>
+          <FormControl id="event-location" mt={4}>
+            <FormLabel>Location</FormLabel>
+            <Input name="location" onChange={handleInputChange} />
           </FormControl>
           <FormControl id="event-startTime" mt={4}>
             <FormLabel>Start Time</FormLabel>
             <Input
-              type="datetime-local"
               name="startTime"
-              value={editEvent.startTime || ""}
+              type="datetime-local"
               onChange={handleInputChange}
             />
           </FormControl>
           <FormControl id="event-endTime" mt={4}>
             <FormLabel>End Time</FormLabel>
             <Input
-              type="datetime-local"
               name="endTime"
-              value={editEvent.endTime || ""}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl id="event-createdBy" mt={4}>
-            <FormLabel>Created By</FormLabel>
-            <Input
-              name="createdBy"
-              value={editEvent.createdBy || ""}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl id="event-categories" mt={4}>
-            <FormLabel>Categories</FormLabel>
-            <Input
-              name="categories"
-              value={editEvent.categories || ""}
+              type="datetime-local"
               onChange={handleInputChange}
             />
           </FormControl>
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" onClick={handleSubmit}>
-            Save
+          <Button colorScheme="blue" mr={3} onClick={handleAddEvent}>
+            Add Event
           </Button>
-          <Button ml={3} onClick={onClose}>
-            Cancel
+          <Button variant="ghost" onClick={onClose}>
+            Close
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -145,4 +136,4 @@ const EditFormModal = ({ isOpen, onClose, event, onSave }) => {
   );
 };
 
-export default EditFormModal;
+export default AddEventModal;

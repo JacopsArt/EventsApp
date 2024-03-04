@@ -1,3 +1,4 @@
+// src/pages/EventPage.jsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -12,28 +13,47 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  ModalFooter, // Importeer ModalFooter
-  FormControl,
-  FormLabel,
-  Input,
+  ModalFooter,
   useDisclosure,
 } from "@chakra-ui/react";
+import EditFormModal from "../components/EditFormModal"; // Zorg ervoor dat dit pad correct is
 
 const EventPage = () => {
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedEvent, setEditedEvent] = useState(null);
+  const [creator, setCreator] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose,
+  } = useDisclosure();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/events/${eventId}`);
-        const eventData = await response.json();
+        const eventResponse = await fetch(
+          `http://localhost:3000/events/${eventId}`
+        );
+        if (!eventResponse.ok) {
+          throw new Error("Failed to fetch event");
+        }
+        const eventData = await eventResponse.json();
         setEvent(eventData);
+
+        if (eventData.createdBy) {
+          const usersResponse = await fetch("http://localhost:3000/users");
+          if (!usersResponse.ok) {
+            throw new Error("Failed to fetch users");
+          }
+          const usersData = await usersResponse.json();
+          const creatorData = usersData.find(
+            (user) => user.id === eventData.createdBy
+          );
+          setCreator(creatorData);
+        }
       } catch (error) {
-        console.error("Error fetching event data:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
@@ -41,29 +61,12 @@ const EventPage = () => {
   }, [eventId]);
 
   const handleEditClick = () => {
-    setIsEditing(true);
-    setEditedEvent(event);
+    onEditOpen();
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditedEvent({ ...editedEvent, [name]: value });
-  };
-
-  const handleSubmit = async () => {
-    try {
-      await fetch(`http://localhost:3000/events/${eventId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editedEvent),
-      });
-      setIsEditing(false);
-      setEvent(editedEvent);
-    } catch (error) {
-      console.error("Error updating event:", error);
-    }
+  const handleEventUpdated = (updatedEvent) => {
+    setEvent(updatedEvent);
+    onEditClose();
   };
 
   const handleDelete = async () => {
@@ -71,8 +74,8 @@ const EventPage = () => {
       await fetch(`http://localhost:3000/events/${eventId}`, {
         method: "DELETE",
       });
-      onClose(); // Sluit de bevestigingsmodal na verwijderen
-      window.location.href = "/"; // Navigeer naar de startpagina na het verwijderen
+      onClose();
+      window.location.href = "/";
     } catch (error) {
       console.error("Error deleting event:", error);
     }
@@ -83,90 +86,46 @@ const EventPage = () => {
       {event && (
         <>
           <Heading>{event.title}</Heading>
+          {creator && (
+            <>
+              <Text>Created by: {creator.name}</Text>
+              <Image src={creator.image} alt={creator.name} width="100px" />
+            </>
+          )}
           <Image src={event.image} alt={event.title} width="300px" />
           <Text>Description: {event.description}</Text>
           <Text>Start Time: {new Date(event.startTime).toLocaleString()}</Text>
           <Text>End Time: {new Date(event.endTime).toLocaleString()}</Text>
           <Button onClick={handleEditClick}>Edit</Button>
-          <Button onClick={onOpen}>Delete</Button>{" "}
-          {/* Open de bevestigingsmodal */}
+          <Button onClick={onOpen}>Delete</Button>
+
+          <EditFormModal
+            isOpen={isEditOpen}
+            onClose={onEditClose}
+            event={event}
+            onSave={handleEventUpdated}
+          />
+
+          <Modal isOpen={isOpen} onClose={onClose}>
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Confirm Deletion</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <Text>Are you sure you want to delete this event?</Text>
+              </ModalBody>
+              <ModalFooter>
+                <Button colorScheme="red" onClick={handleDelete}>
+                  Delete
+                </Button>
+                <Button variant="ghost" onClick={onClose}>
+                  Cancel
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
         </>
       )}
-      {isEditing && (
-        <Modal isOpen={isEditing} onClose={() => setIsEditing(false)}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Edit Event</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <FormControl>
-                <FormLabel>Title</FormLabel>
-                <Input
-                  type="text"
-                  name="title"
-                  value={editedEvent.title}
-                  onChange={handleInputChange}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Description</FormLabel>
-                <Input
-                  type="text"
-                  name="description"
-                  value={editedEvent.description}
-                  onChange={handleInputChange}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Image URL</FormLabel>
-                <Input
-                  type="text"
-                  name="image"
-                  value={editedEvent.image}
-                  onChange={handleInputChange}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Start Time</FormLabel>
-                <Input
-                  type="datetime-local"
-                  name="startTime"
-                  value={editedEvent.startTime}
-                  onChange={handleInputChange}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>End Time</FormLabel>
-                <Input
-                  type="datetime-local"
-                  name="endTime"
-                  value={editedEvent.endTime}
-                  onChange={handleInputChange}
-                />
-              </FormControl>
-              <Button onClick={handleSubmit}>Submit</Button>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
-      )}
-      {/* Bevestigingsmodal */}
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Are you sure?</ModalHeader>
-          <ModalBody>
-            <Text>Do you really want to delete this event?</Text>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="red" onClick={handleDelete}>
-              Delete
-            </Button>
-            <Button variant="ghost" onClick={onClose}>
-              Cancel
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </Box>
   );
 };
