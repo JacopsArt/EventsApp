@@ -1,70 +1,100 @@
-// src/components/AddEventModal.jsx
 import React, { useState } from "react";
 import {
-  useToast,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
-  ModalCloseButton,
-  ModalBody,
   ModalFooter,
+  ModalBody,
+  ModalCloseButton,
   Button,
   FormControl,
   FormLabel,
   Input,
-  Textarea,
 } from "@chakra-ui/react";
 
-const AddEventModal = ({ isOpen, onClose, setEvents, categories }) => {
-  const toast = useToast();
-  const [newEvent, setNewEvent] = useState({
-    createdBy: "",
+const AddEventModal = ({ isOpen, onClose, refreshEvents }) => {
+  const [formData, setFormData] = useState({
     title: "",
-    description: "",
     image: "",
-    categoryIds: [],
-    location: "",
+    description: "",
+    category: "",
     startTime: "",
     endTime: "",
+    location: "",
+    createdBy: "",
+    userImage: "",
   });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewEvent({ ...newEvent, [name]: value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAddEvent = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEvent),
-      });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+    let userId;
+    let categoryId;
+
+    try {
+      const catResponse = await fetch("http://localhost:3000/categories");
+      const categories = await catResponse.json();
+      const existingCategory = categories.find(
+        (cat) => cat.name === formData.category
+      );
+
+      if (existingCategory) {
+        categoryId = existingCategory.id;
+      } else {
+        const newCatResponse = await fetch("http://localhost:3000/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: formData.category }),
+        });
+        const newCategory = await newCatResponse.json();
+        categoryId = newCategory.id;
       }
 
-      toast({
-        title: "Event Added",
-        description: "The new event has been successfully added.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
+      const userResponse = await fetch("http://localhost:3000/users");
+      const users = await userResponse.json();
+      const existingUser = users.find(
+        (user) => user.name === formData.createdBy
+      );
+
+      if (existingUser) {
+        userId = existingUser.id;
+      } else {
+        const newUserResponse = await fetch("http://localhost:3000/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.createdBy,
+            image: formData.userImage,
+          }),
+        });
+        const newUser = await newUserResponse.json();
+        userId = newUser.id;
+      }
+
+      await fetch("http://localhost:3000/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          image: formData.image,
+          startTime: formData.startTime,
+          endTime: formData.endTime,
+          location: formData.location,
+          createdBy: userId,
+          categoryIds: [categoryId],
+        }),
       });
+
       onClose();
-      setEvents((prevEvents) => [...prevEvents, newEvent]); // Add the new event to the events list
+      refreshEvents();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to add event: ${error.message}`,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      console.error("Error:", error);
     }
   };
 
@@ -72,63 +102,101 @@ const AddEventModal = ({ isOpen, onClose, setEvents, categories }) => {
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Add New Event</ModalHeader>
+        <ModalHeader>Add a New Event</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
-          <FormControl id="event-createdBy">
-            <FormLabel>Created By</FormLabel>
-            <Input name="createdBy" onChange={handleInputChange} />
-          </FormControl>
-          <FormControl id="event-title" mt={4}>
-            <FormLabel>Title</FormLabel>
-            <Input name="title" onChange={handleInputChange} />
-          </FormControl>
-          <FormControl id="event-description" mt={4}>
-            <FormLabel>Description</FormLabel>
-            <Textarea name="description" onChange={handleInputChange} />
-          </FormControl>
-          <FormControl id="event-image" mt={4}>
-            <FormLabel>Image URL</FormLabel>
-            <Input name="image" onChange={handleInputChange} />
-          </FormControl>
-          <FormControl id="event-categoryIds" mt={4}>
-            <FormLabel>Category IDs</FormLabel>
-            <Input
-              name="categoryIds"
-              placeholder="Enter comma-separated IDs"
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl id="event-location" mt={4}>
-            <FormLabel>Location</FormLabel>
-            <Input name="location" onChange={handleInputChange} />
-          </FormControl>
-          <FormControl id="event-startTime" mt={4}>
-            <FormLabel>Start Time</FormLabel>
-            <Input
-              name="startTime"
-              type="datetime-local"
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl id="event-endTime" mt={4}>
-            <FormLabel>End Time</FormLabel>
-            <Input
-              name="endTime"
-              type="datetime-local"
-              onChange={handleInputChange}
-            />
-          </FormControl>
-        </ModalBody>
-
-        <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={handleAddEvent}>
-            Add Event
-          </Button>
-          <Button variant="ghost" onClick={onClose}>
-            Close
-          </Button>
-        </ModalFooter>
+        <form onSubmit={handleSubmit}>
+          <ModalBody>
+            <FormControl mt={4}>
+              <FormLabel>Title</FormLabel>
+              <Input
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                required
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Image URL</FormLabel>
+              <Input
+                name="image"
+                value={formData.image}
+                onChange={handleInputChange}
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Description</FormLabel>
+              <Input
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                required
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Category</FormLabel>
+              <Input
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                required
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Start Time</FormLabel>
+              <Input
+                type="datetime-local"
+                name="startTime"
+                value={formData.startTime}
+                onChange={handleInputChange}
+                required
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>End Time</FormLabel>
+              <Input
+                type="datetime-local"
+                name="endTime"
+                value={formData.endTime}
+                onChange={handleInputChange}
+                required
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Location</FormLabel>
+              <Input
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                required
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Created By</FormLabel>
+              <Input
+                name="createdBy"
+                value={formData.createdBy}
+                onChange={handleInputChange}
+                required
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>User Image URL</FormLabel>
+              <Input
+                name="userImage"
+                value={formData.userImage}
+                onChange={handleInputChange}
+              />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" type="submit" mr={3}>
+              Save
+            </Button>
+            <Button variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </form>
       </ModalContent>
     </Modal>
   );

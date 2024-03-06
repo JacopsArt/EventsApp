@@ -1,130 +1,76 @@
-// pages/EventsPage.jsx
-import React, { useState } from "react";
+import React from "react";
 import {
-  Box,
   Heading,
+  Box,
   Image,
   Text,
   Button,
   useDisclosure,
-  Grid,
-  Flex,
 } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AddEventModal from "../components/AddEventModal";
-import SearchInput from "../components/SearchInput";
-import CategoryFilter from "../components/CategoryFilter";
 
-export const EventsPage = ({ events, setEvents, categories }) => {
+export const EventsPage = ({ events, categories, users, refreshEvents }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const navigate = useNavigate();
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value.toLowerCase());
+  const getCategoryNames = (categoryIds) => {
+    if (!categories || !categoryIds) return "";
+    return categories
+      .filter((category) => categoryIds.includes(category.id))
+      .map((category) => category.name)
+      .join(", ");
   };
 
-  const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
+  const getUserName = (userId) => {
+    const user = users.find((user) => user.id === userId);
+    return user ? user.name : "Anonymous";
   };
-
-  const filteredEvents = events.filter((event) => {
-    const titleMatch = event.title.toLowerCase().includes(searchTerm);
-    const descriptionMatch = event.description
-      .toLowerCase()
-      .includes(searchTerm);
-    const categoryMatch =
-      selectedCategory === "All" ||
-      event.categoryIds.includes(parseInt(selectedCategory));
-
-    return (titleMatch || descriptionMatch) && categoryMatch;
-  });
 
   return (
-    <Box maxW="1200px" mx="auto" px="2rem">
-      {/* Search and Category Filters */}
-      <Box mb="2rem" textAlign="center">
-        <Heading as="h2" size="lg" mb="2">
-          List of Events
-        </Heading>
-        <Box mb="1rem">
-          <SearchInput value={searchTerm} onChange={handleSearchChange} />
-        </Box>
-        <Box>
-          <CategoryFilter
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            categories={categories}
+    <>
+      <Heading>List of events</Heading>
+      {events.map((event) => (
+        <Box
+          key={event.id}
+          border="1px"
+          borderColor="gray.200"
+          p={4}
+          m={4}
+          borderRadius="md"
+          onClick={() => navigate(`/event/${event.id}`)}
+        >
+          <Image
+            src={event.image || "placeholder-image-url.jpg"}
+            alt={event.title}
+            borderRadius="md"
           />
+          <Text fontSize="xl" fontWeight="bold">
+            {event.title}
+          </Text>
+          <Text>{event.description}</Text>
+          <Text color="gray.600">
+            Start Time: {new Date(event.startTime).toLocaleString()}
+          </Text>
+          <Text color="gray.600">
+            End Time: {new Date(event.endTime).toLocaleString()}
+          </Text>
+          <Text color="gray.600">
+            Created by: {getUserName(event.createdBy)}
+          </Text>
+          <Text color="gray.600">
+            Categories: {getCategoryNames(event.categoryIds)}
+          </Text>
         </Box>
-      </Box>
-      {/* Events Grid */}
-      <Grid
-        templateColumns={{
-          base: "repeat(1, 1fr)",
-          sm: "repeat(2, 1fr)",
-          md: "repeat(3, 1fr)",
-        }}
-        gap={6}
-        alignItems="center"
-      >
-        {filteredEvents.map((event) => (
-          <Link
-            to={`/event/${event.id}`}
-            key={event.id}
-            style={{ textDecoration: "none" }}
-          >
-            <Box
-              p={4}
-              borderWidth="1px"
-              borderRadius="lg"
-              overflow="hidden"
-              mb="4"
-            >
-              <Flex direction="column" alignItems="center">
-                <Heading as="h2" size="lg" mb="2">
-                  {event.title}
-                </Heading>
-                <Image
-                  src={event.image}
-                  alt={event.title}
-                  maxW="100%"
-                  h="200px"
-                  mb="2"
-                />
-                <Text fontSize="md" textAlign="center">
-                  {event.description}
-                </Text>
-                <Text fontSize="md">Start Time: {event.startTime}</Text>
-                <Text fontSize="md">End Time: {event.endTime}</Text>
-                <Text fontSize="md">Created By: {event.createdBy}</Text>
-                <Text fontSize="md">
-                  Categories:{" "}
-                  {event.categoryIds
-                    .map(
-                      (categoryId) =>
-                        categories.find((cat) => cat.id === categoryId)?.name ||
-                        "Unknown"
-                    )
-                    .join(", ")}
-                </Text>
-              </Flex>
-            </Box>
-          </Link>
-        ))}
-      </Grid>
-      {/* Add Event Button */}
-      <Button colorScheme="blue" mt="4" onClick={onOpen}>
+      ))}
+      <Button onClick={onOpen} mt="4" mb="4">
         Add Event
       </Button>
       <AddEventModal
         isOpen={isOpen}
         onClose={onClose}
-        setEvents={setEvents}
-        categories={categories}
+        refreshEvents={refreshEvents}
       />
-    </Box>
+    </>
   );
 };
-
-export default EventsPage;
