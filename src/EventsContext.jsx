@@ -9,21 +9,42 @@ export const EventsProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const response = await fetch("http://localhost:3000/events");
-      const data = await response.json();
-      setEvents(data);
+      try {
+        const response = await fetch("http://localhost:3000/events");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setEvents(data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
     };
 
     const fetchCategories = async () => {
-      const response = await fetch("http://localhost:3000/categories");
-      const data = await response.json();
-      setCategories(data);
+      try {
+        const response = await fetch("http://localhost:3000/categories");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
     };
 
     const fetchUsers = async () => {
-      const response = await fetch("http://localhost:3000/users");
-      const data = await response.json();
-      setUsers(data);
+      try {
+        const response = await fetch("http://localhost:3000/users");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
     };
 
     fetchEvents();
