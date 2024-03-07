@@ -27,9 +27,8 @@ export const EventPage = () => {
     useContext(EventsContext);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-
   const event = events.find((e) => e.id.toString() === eventId);
-  const user = users.find((u) => u.id === event?.createdBy);
+  const user = event ? users.find((u) => u.id === event.createdBy) : null;
 
   const formatDateTime = (datetime) => {
     return new Date(datetime).toLocaleString("en-US", {
