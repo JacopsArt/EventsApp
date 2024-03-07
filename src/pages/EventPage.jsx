@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
-  Heading,
   Image,
+  Heading,
   Text,
   Button,
   AlertDialog,
@@ -12,6 +12,10 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+  Divider,
+  Flex,
+  Stack,
+  Avatar,
 } from "@chakra-ui/react";
 import EditEventModal from "../components/EditEventModal";
 
@@ -48,10 +52,6 @@ export const EventPage = ({
       .join(", ");
   };
 
-  if (!event) {
-    return <Heading>Event not found</Heading>;
-  }
-
   const handleSave = async (editedEvent) => {
     await updateEvent(editedEvent);
     setIsEditModalOpen(false);
@@ -68,32 +68,49 @@ export const EventPage = ({
     navigate("/");
   };
 
+  if (!event) {
+    return <Heading>Event not found</Heading>;
+  }
+
   return (
-    <Box p={4}>
-      <Heading mb={4}>{event.title || "No Title"}</Heading>
-      {event.image && <Image src={event.image} alt={event.title} mb={4} />}
-      <Text fontSize="lg" mb={4}>
-        {event.description || "No Description"}
-      </Text>
-      <Text color="gray.600">
-        Start Time: {formatDateTime(event.startTime)}
-      </Text>
-      <Text color="gray.600">End Time: {formatDateTime(event.endTime)}</Text>
-      <Text color="gray.600">
-        Categories: {getCategoryNames(event.categoryIds)}
-      </Text>
-      {user && (
-        <Box mb={4}>
-          <Text fontSize="md">Created by: {user.name}</Text>
-          {user.image && <Image src={user.image} alt={user.name} />}
-        </Box>
+    <Box
+      maxW="2xl"
+      mx="auto"
+      mt={5}
+      p={5}
+      borderWidth="1px"
+      borderRadius="lg"
+      overflow="hidden"
+    >
+      {event.image && (
+        <Image src={event.image} alt={event.title} borderRadius="lg" />
       )}
-      <Button mr={4} onClick={() => setIsEditModalOpen(true)}>
-        Edit
-      </Button>
-      <Button colorScheme="red" onClick={handleDelete}>
-        Delete
-      </Button>
+      <Stack mt={6} spacing={3}>
+        <Heading size="lg">{event.title || "No Title"}</Heading>
+        <Text fontSize="md">{event.description || "No Description"}</Text>
+        <Text>Start Time: {formatDateTime(event.startTime)}</Text>
+        <Text>End Time: {formatDateTime(event.endTime)}</Text>
+        <Text>Categories: {getCategoryNames(event.categoryIds)}</Text>
+        {user && (
+          <Flex align="center">
+            <Avatar size="sm" src={user.image} name={user.name} mr={2} />
+            <Text fontSize="md">{user.name}</Text>
+          </Flex>
+        )}
+      </Stack>
+      <Divider my={4} />
+      <Flex justifyContent="center" gap="4">
+        <Button
+          size="md"
+          colorScheme="blue"
+          onClick={() => setIsEditModalOpen(true)}
+        >
+          Edit
+        </Button>
+        <Button size="md" colorScheme="red" onClick={handleDelete}>
+          Delete
+        </Button>
+      </Flex>
       <EditEventModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
