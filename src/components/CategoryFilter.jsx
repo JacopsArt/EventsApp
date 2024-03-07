@@ -7,9 +7,9 @@ const CategoryFilter = ({ value, onChange, categories }) => {
   }
 
   return (
-    <Box mx="auto" width="300px">
+    <Box mx="auto" width="10%">
       <Input
-        placeholder="Filter by category"
+        placeholder="Category"
         value={value}
         onChange={onChange}
         mb="4"

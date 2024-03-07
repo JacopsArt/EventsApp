@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useContext } from "react";
 import {
   Heading,
   Box,
@@ -8,40 +8,17 @@ import {
   useDisclosure,
   SimpleGrid,
   Container,
-  Input,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import AddEventModal from "../components/AddEventModal";
+import { EventsContext } from "../EventsContext";
+import CategoryFilter from "../components/CategoryFilter";
+import SearchInput from "../components/SearchInput";
 
-const SearchInput = ({ value, onChange }) => {
-  return (
-    <Box mx="auto" width="300px">
-      <Input
-        placeholder="Search events"
-        value={value}
-        onChange={onChange}
-        mb="4"
-      />
-    </Box>
-  );
-};
-
-const CategoryFilter = ({ value, onChange }) => {
-  return (
-    <Box mx="auto" width="300px">
-      <Input
-        placeholder="Filter by category"
-        value={value}
-        onChange={onChange}
-        mb="4"
-      />
-    </Box>
-  );
-};
-
-export const EventsPage = ({ events, categories, refreshEvents }) => {
+export const EventsPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
+  const { events, categories } = useContext(EventsContext);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
 
@@ -52,11 +29,11 @@ export const EventsPage = ({ events, categories, refreshEvents }) => {
         .includes(search.toLowerCase());
       const matchesCategory =
         categoryFilter === "" ||
-        categories.some(
-          (category) =>
-            event.categoryIds.includes(category.id) &&
+        categories
+          .filter((category) =>
             category.name.toLowerCase().includes(categoryFilter.toLowerCase())
-        );
+          )
+          .some((category) => event.categoryIds.includes(category.id));
 
       return matchesSearch && matchesCategory;
     });
@@ -71,6 +48,7 @@ export const EventsPage = ({ events, categories, refreshEvents }) => {
       <CategoryFilter
         value={categoryFilter}
         onChange={(e) => setCategoryFilter(e.target.value)}
+        categories={categories}
       />
       <Container maxW="80%" mt="6">
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={5}>
@@ -120,11 +98,7 @@ export const EventsPage = ({ events, categories, refreshEvents }) => {
           Add Event
         </Button>
       </Container>
-      <AddEventModal
-        isOpen={isOpen}
-        onClose={onClose}
-        refreshEvents={refreshEvents}
-      />
+      <AddEventModal isOpen={isOpen} onClose={onClose} />
     </>
   );
 };
