@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -18,19 +18,16 @@ import {
   Avatar,
 } from "@chakra-ui/react";
 import EditEventModal from "../components/EditEventModal";
+import { EventsContext } from "../EventsContext";
 
-export const EventPage = ({
-  events,
-  updateEvent,
-  deleteEvent,
-  users,
-  categories,
-  refreshEvents,
-}) => {
+export const EventPage = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { events, users, categories, updateEvent, deleteEvent, refreshEvents } =
+    useContext(EventsContext);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+
   const event = events.find((e) => e.id.toString() === eventId);
   const user = users.find((u) => u.id === event?.createdBy);
 

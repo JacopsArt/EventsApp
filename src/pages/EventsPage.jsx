@@ -52,7 +52,6 @@ export const EventsPage = () => {
       />
       <Container maxW="80%" mt="6" mb="12">
         {" "}
-        {/* Verhoogde bottom margin */}
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={5}>
           {filteredEvents.map((event) => (
             <Box
