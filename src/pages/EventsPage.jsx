@@ -50,7 +50,9 @@ export const EventsPage = () => {
         onChange={(e) => setCategoryFilter(e.target.value)}
         categories={categories}
       />
-      <Container maxW="80%" mt="6">
+      <Container maxW="80%" mt="6" mb="12">
+        {" "}
+        {/* Verhoogde bottom margin */}
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={5}>
           {filteredEvents.map((event) => (
             <Box
@@ -93,10 +95,22 @@ export const EventsPage = () => {
               </Box>
             </Box>
           ))}
+          <Box
+            as="section"
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            cursor="pointer"
+            minH="200px"
+          >
+            <Button onClick={onOpen} size="lg">
+              + Add Event
+            </Button>
+          </Box>
         </SimpleGrid>
-        <Button onClick={onOpen} my="6">
-          Add Event
-        </Button>
       </Container>
       <AddEventModal isOpen={isOpen} onClose={onClose} />
     </>
