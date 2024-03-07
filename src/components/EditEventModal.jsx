@@ -11,7 +11,6 @@ import {
   FormControl,
   FormLabel,
   Input,
-  useToast,
 } from "@chakra-ui/react";
 
 const EditEventModal = ({
@@ -24,7 +23,6 @@ const EditEventModal = ({
   refreshEvents,
 }) => {
   const [editedEvent, setEditedEvent] = useState(event);
-  const toast = useToast();
 
   useEffect(() => {
     setEditedEvent(event);
@@ -51,23 +49,10 @@ const EditEventModal = ({
         createdBy: userId,
       };
       await onSave(updatedEvent);
-      toast({
-        title: "Event Updated",
-        description: "The event has been successfully updated.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
       onClose();
       refreshEvents();
     } catch (error) {
-      toast({
-        title: "Update Failed",
-        description: "There was a problem updating the event.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      console.error("There was a problem updating the event:", error);
     }
   };
 
@@ -166,7 +151,6 @@ const EditEventModal = ({
               />
             </FormControl>
           </ModalBody>
-
           <ModalFooter>
             <Button colorScheme="blue" type="submit">
               Save
