@@ -11,6 +11,7 @@ import {
   FormControl,
   FormLabel,
   Input,
+  useToast,
 } from "@chakra-ui/react";
 import { EventsContext } from "../EventsContext";
 
@@ -18,13 +19,14 @@ const EditEventModal = ({ isOpen, onClose, event }) => {
   const [editedEvent, setEditedEvent] = useState(event);
   const { events, setEvents, users, setUsers, categories, setCategories } =
     useContext(EventsContext);
+  const toast = useToast();
 
   useEffect(() => {
-    setEditedEvent(event); // Zet de initiële staat wanneer het evenement verandert
+    setEditedEvent(event);
   }, [event]);
 
   const handleInputChange = (e) => {
-    setEditedEvent({ ...editedEvent, [e.target.name]: e.target.value }); // Verwerk wijzigingen in formulierinputvelden
+    setEditedEvent({ ...editedEvent, [e.target.name]: e.target.value });
   };
 
   const handleFormSubmit = async (e) => {
@@ -48,17 +50,23 @@ const EditEventModal = ({ isOpen, onClose, event }) => {
       createdBy: userId,
     };
 
-    // Update event in state and possibly in your backend
     const updatedEvents = events.map((ev) =>
       ev.id === updatedEvent.id ? updatedEvent : ev
     );
     setEvents(updatedEvents);
 
-    onClose(); // Sluit de modal na het bijwerken van het evenement
+    toast({
+      title: "Event Updated",
+      description: "The event has been successfully updated.",
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+    });
+
+    onClose();
   };
 
   const createCategory = async (name) => {
-    // Implementeer hier uw logica om een nieuwe categorie te maken
     const response = await fetch("http://localhost:3000/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -70,7 +78,6 @@ const EditEventModal = ({ isOpen, onClose, event }) => {
   };
 
   const createUser = async (name, image) => {
-    // Implementeer hier uw logica om een nieuwe gebruiker te maken
     const response = await fetch("http://localhost:3000/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
