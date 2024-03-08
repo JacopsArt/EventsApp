@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useContext } from "react";
+import { useForm } from "react-hook-form";
 import {
   Modal,
   ModalOverlay,
@@ -15,77 +16,39 @@ import {
 } from "@chakra-ui/react";
 import { EventsContext } from "../EventsContext";
 
-const EditEventModal = ({ isOpen, onClose, event }) => {
-  const [editedEvent, setEditedEvent] = useState(event);
-  const { events, setEvents, users, setUsers, categories, setCategories } =
-    useContext(EventsContext);
+export const EditEventModal = ({ isOpen, onClose, event }) => {
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+  const { updateEvent } = useContext(EventsContext);
   const toast = useToast();
 
   useEffect(() => {
-    setEditedEvent(event);
-  }, [event]);
-
-  const handleInputChange = (e) => {
-    setEditedEvent({ ...editedEvent, [e.target.name]: e.target.value });
-  };
-
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-
-    let categoryId = categories.find(
-      (cat) => cat.name === editedEvent.categoryName
-    )?.id;
-    if (!categoryId) {
-      categoryId = await createCategory(editedEvent.categoryName);
+    if (event) {
+      Object.keys(event).forEach(key => {
+        setValue(key, event[key]);
+      });
     }
+  }, [event, setValue]);
 
-    let userId = users.find((user) => user.name === editedEvent.userName)?.id;
-    if (!userId) {
-      userId = await createUser(editedEvent.userName, editedEvent.userImage);
+  const onSubmit = async (data) => {
+    try {
+      await updateEvent(data);
+      toast({
+        title: "Event Updated",
+        description: "The event has been successfully updated.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while updating the event.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
-
-    const updatedEvent = {
-      ...editedEvent,
-      categoryIds: [categoryId],
-      createdBy: userId,
-    };
-
-    const updatedEvents = events.map((ev) =>
-      ev.id === updatedEvent.id ? updatedEvent : ev
-    );
-    setEvents(updatedEvents);
-
-    toast({
-      title: "Event Updated",
-      description: "The event has been successfully updated.",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
-
-    onClose();
-  };
-
-  const createCategory = async (name) => {
-    const response = await fetch("http://localhost:3000/categories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    const newCategory = await response.json();
-    setCategories([...categories, newCategory]);
-    return newCategory.id;
-  };
-
-  const createUser = async (name, image) => {
-    const response = await fetch("http://localhost:3000/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, image }),
-    });
-    const newUser = await response.json();
-    setUsers([...users, newUser]);
-    return newUser.id;
   };
 
   return (
@@ -94,73 +57,43 @@ const EditEventModal = ({ isOpen, onClose, event }) => {
       <ModalContent>
         <ModalHeader>Edit Event</ModalHeader>
         <ModalCloseButton />
-        <form onSubmit={handleFormSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <ModalBody>
-            <FormControl mt={4}>
+            <FormControl mt={4} isInvalid={errors.title}>
               <FormLabel>Title</FormLabel>
-              <Input
-                name="title"
-                value={editedEvent.title || ""}
-                onChange={handleInputChange}
-              />
+              <Input {...register("title")} />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isInvalid={errors.description}>
               <FormLabel>Description</FormLabel>
-              <Input
-                name="description"
-                value={editedEvent.description || ""}
-                onChange={handleInputChange}
-              />
+              <Input {...register("description")} />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isInvalid={errors.location}>
+              <FormLabel>Location</FormLabel>
+              <Input {...register("location")} />
+            </FormControl>
+            <FormControl mt={4} isInvalid={errors.image}>
               <FormLabel>Image URL</FormLabel>
-              <Input
-                name="image"
-                value={editedEvent.image || ""}
-                onChange={handleInputChange}
-              />
+              <Input {...register("image")} />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isInvalid={errors.startTime}>
               <FormLabel>Start Time</FormLabel>
-              <Input
-                type="datetime-local"
-                name="startTime"
-                value={editedEvent.startTime || ""}
-                onChange={handleInputChange}
-              />
+              <Input {...register("startTime")} type="datetime-local" />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isInvalid={errors.endTime}>
               <FormLabel>End Time</FormLabel>
-              <Input
-                type="datetime-local"
-                name="endTime"
-                value={editedEvent.endTime || ""}
-                onChange={handleInputChange}
-              />
+              <Input {...register("endTime")} type="datetime-local" />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isInvalid={errors.categoryName}>
               <FormLabel>Category</FormLabel>
-              <Input
-                name="categoryName"
-                value={editedEvent.categoryName || ""}
-                onChange={handleInputChange}
-              />
+              <Input {...register("categoryName")} />
             </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>User</FormLabel>
-              <Input
-                name="userName"
-                value={editedEvent.userName || ""}
-                onChange={handleInputChange}
-              />
+            <FormControl mt={4} isInvalid={errors.userName}>
+              <FormLabel>User Name</FormLabel>
+              <Input {...register("userName")} />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isInvalid={errors.userImage}>
               <FormLabel>User Image URL</FormLabel>
-              <Input
-                name="userImage"
-                value={editedEvent.userImage || ""}
-                onChange={handleInputChange}
-              />
+              <Input {...register("userImage")} />
             </FormControl>
           </ModalBody>
           <ModalFooter>
@@ -176,5 +109,3 @@ const EditEventModal = ({ isOpen, onClose, event }) => {
     </Modal>
   );
 };
-
-export default EditEventModal;

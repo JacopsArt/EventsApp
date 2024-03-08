@@ -10,7 +10,7 @@ import {
   Container,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import AddEventModal from "../components/AddEventModal";
+import { AddEventModal } from "../components/AddEventModal";
 import { EventsContext } from "../EventsContext";
 import CategoryFilter from "../components/CategoryFilter";
 import SearchInput from "../components/SearchInput";
@@ -25,7 +25,8 @@ export const EventsPage = () => {
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
       const matchesSearch =
-        event.title && event.title.toLowerCase().includes(search.toLowerCase());
+        event.title &&
+        event.title.toLowerCase().includes(search.toLowerCase());
       const matchesCategory =
         (categories && categoryFilter === "") ||
         (categories &&
@@ -38,7 +39,13 @@ export const EventsPage = () => {
                   .toLowerCase()
                   .includes(categoryFilter.toLowerCase())
             )
-            .some((category) => event.categoryIds.includes(category.id)));
+            .some((category) => {
+              if (Array.isArray(event.categoryIds)) {
+                return event.categoryIds.includes(category.id);
+              } else {
+                return event.categoryIds === category.id;
+              }
+            }));
 
       return matchesSearch && matchesCategory;
     });
@@ -88,14 +95,18 @@ export const EventsPage = () => {
                 </Text>
                 <Text color="gray.600" mb={1}>
                   Categories:{" "}
-                  {event.categoryIds
-                    .map(
-                      (id) =>
-                        categories.find(
-                          (category) => category && category.id === id
-                        )?.name
-                    )
-                    .join(", ")}
+                  {Array.isArray(event.categoryIds)
+                    ? event.categoryIds
+                        .map(
+                          (id) =>
+                            categories.find(
+                              (category) => category && category.id === id
+                            )?.name
+                        )
+                        .join(", ")
+                    : categories.find(
+                        (category) => category && category.id === event.categoryIds
+                      )?.name}
                 </Text>
               </Box>
             </Box>

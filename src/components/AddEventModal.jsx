@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { EventsContext } from "../EventsContext";
 
-const AddEventModal = ({ isOpen, onClose }) => {
+export const AddEventModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     title: "",
     image: "",
@@ -27,51 +27,52 @@ const AddEventModal = ({ isOpen, onClose }) => {
     userImage: "",
   });
 
-  const { addEvent, addCategory, users, setUsers, categories } =
+  const { addEvent, users, setUsers, categories, setCategories } =
     useContext(EventsContext);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const addCategory = async (name) => {
+    const response = await fetch("http://localhost:3000/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    const newCategory = await response.json();
+    setCategories([...categories, newCategory]);
+    return newCategory.id;
+  };
+
+  const addUser = async (userData) => {
+    const response = await fetch('http://localhost:3000/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+    const newUser = await response.json();
+    setUsers([...users, newUser]);
+    return newUser.id;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let userId, categoryId;
-
-    const existingUser = users.find((user) => user.name === formData.createdBy);
-    if (existingUser) {
-      userId = existingUser.id;
-    } else {
-      const newUserResponse = await fetch("http://localhost:3000/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.createdBy,
-          image: formData.userImage,
-        }),
-      });
-      const newUser = await newUserResponse.json();
-      setUsers([...users, newUser]);
-      userId = newUser.id;
+    let categoryId = categories.find(cat => cat.name === formData.category)?.id;
+    if (!categoryId) {
+      categoryId = await addCategory(formData.category);
     }
 
-    const existingCategory = categories.find(
-      (cat) => cat.name === formData.category
-    );
-    if (existingCategory) {
-      categoryId = existingCategory.id;
-    } else {
-      categoryId = await addCategory({ name: formData.category });
+    let userId = users.find(user => user.name === formData.createdBy)?.id;
+    if (!userId) {
+      userId = await addUser({ name: formData.createdBy, image: formData.userImage });
     }
 
     await addEvent({
-      title: formData.title,
-      description: formData.description,
-      image: formData.image,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      location: formData.location,
+      ...formData,
       createdBy: userId,
       categoryIds: [categoryId],
     });
@@ -87,13 +88,12 @@ const AddEventModal = ({ isOpen, onClose }) => {
         <ModalCloseButton />
         <form onSubmit={handleSubmit}>
           <ModalBody>
-            <FormControl mt={4}>
+            <FormControl mt={4} isRequired>
               <FormLabel>Title</FormLabel>
               <Input
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                required
               />
             </FormControl>
             <FormControl mt={4}>
@@ -104,60 +104,54 @@ const AddEventModal = ({ isOpen, onClose }) => {
                 onChange={handleInputChange}
               />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isRequired>
               <FormLabel>Description</FormLabel>
               <Input
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                required
               />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isRequired>
               <FormLabel>Category</FormLabel>
               <Input
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                required
               />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isRequired>
               <FormLabel>Start Time</FormLabel>
               <Input
                 type="datetime-local"
                 name="startTime"
                 value={formData.startTime}
                 onChange={handleInputChange}
-                required
               />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isRequired>
               <FormLabel>End Time</FormLabel>
               <Input
                 type="datetime-local"
                 name="endTime"
                 value={formData.endTime}
                 onChange={handleInputChange}
-                required
               />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isRequired>
               <FormLabel>Location</FormLabel>
               <Input
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
-                required
               />
             </FormControl>
-            <FormControl mt={4}>
+            <FormControl mt={4} isRequired>
               <FormLabel>Created By</FormLabel>
               <Input
                 name="createdBy"
                 value={formData.createdBy}
                 onChange={handleInputChange}
-                required
               />
             </FormControl>
             <FormControl mt={4}>
@@ -170,7 +164,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" type="submit" mr={3}>
+            <Button colorScheme="blue" mr={3} type="submit">
               Save
             </Button>
             <Button variant="ghost" onClick={onClose}>
@@ -182,5 +176,3 @@ const AddEventModal = ({ isOpen, onClose }) => {
     </Modal>
   );
 };
-
-export default AddEventModal;

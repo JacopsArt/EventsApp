@@ -7,11 +7,17 @@ import { EventPage } from "./pages/EventPage";
 import { Root } from "./components/Root";
 import { EventsProvider } from "./EventsContext";
 
-const Main = () => {
+export const Main = () => {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <Root />,
+      element: (
+        <ChakraProvider>
+          <EventsProvider>
+            <Root />
+          </EventsProvider>
+        </ChakraProvider>
+      ),
       children: [
         {
           path: "/",
@@ -25,13 +31,7 @@ const Main = () => {
     },
   ]);
 
-  return (
-    <ChakraProvider>
-      <EventsProvider>
-        <RouterProvider router={router} />
-      </EventsProvider>
-    </ChakraProvider>
-  );
+  return <RouterProvider router={router} />;
 };
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

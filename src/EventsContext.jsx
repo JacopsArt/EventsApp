@@ -8,50 +8,97 @@ export const EventsProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const eventsResponse = await fetch("http://localhost:3000/events");
-      const eventsData = await eventsResponse.json();
-      setEvents(eventsData);
-
-      const categoriesResponse = await fetch(
-        "http://localhost:3000/categories"
-      );
-      const categoriesData = await categoriesResponse.json();
-      setCategories(categoriesData);
-
-      const usersResponse = await fetch("http://localhost:3000/users");
-      const usersData = await usersResponse.json();
-      setUsers(usersData);
-    };
-
-    fetchData();
+    loadData();
   }, []);
 
-  const addEvent = async (eventData) => {
-    const response = await fetch("http://localhost:3000/events", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(eventData),
-    });
-    const newEvent = await response.json();
-    setEvents((prevEvents) => [...prevEvents, newEvent]);
+  const loadData = async () => {
+    await fetchEvents();
+    await fetchCategories();
+    await fetchUsers();
   };
 
-  const addCategory = async (categoryData) => {
-    const response = await fetch("http://localhost:3000/categories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(categoryData),
-    });
-    const newCategory = await response.json();
-    setCategories((prevCategories) => [...prevCategories, newCategory]);
-    return newCategory.id;
+  const fetchEvents = async () => {
+    const response = await fetch("http://localhost:3000/events");
+    const data = await response.json();
+    setEvents(data);
+  };
+
+  const fetchCategories = async () => {
+    const response = await fetch("http://localhost:3000/categories");
+    const data = await response.json();
+    setCategories(data);
+  };
+
+  const fetchUsers = async () => {
+    const response = await fetch("http://localhost:3000/users");
+    const data = await response.json();
+    setUsers(data);
+  };
+
+  const updateEvent = async (editedEvent) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/events/${editedEvent.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editedEvent),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Error updating event');
+      }
+
+      const updatedEvent = await response.json();
+      setEvents((prevEvents) =>
+        prevEvents.map((event) =>
+          event.id === updatedEvent.id ? updatedEvent : event
+        )
+      );
+
+      loadData();
+    } catch (error) {
+      console.error("Error updating event:", error);
+      throw error;
+    }
+  };
+
+  const addEvent = async (newEvent) => {
+    try {
+      const response = await fetch("http://localhost:3000/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newEvent),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error adding event');
+      }
+
+      const addedEvent = await response.json();
+      setEvents((prevEvents) => [...prevEvents, addedEvent]);
+
+      loadData();
+    } catch (error) {
+      console.error("Error adding event:", error);
+      throw error;
+    }
+  };
+
+  const contextValue = {
+    events,
+    setEvents,
+    users,
+    setUsers,
+    categories,
+    setCategories,
+    updateEvent,
+    addEvent,
   };
 
   return (
-    <EventsContext.Provider
-      value={{ events, users, categories, addEvent, addCategory }}
-    >
+    <EventsContext.Provider value={contextValue}>
       {children}
     </EventsContext.Provider>
   );
