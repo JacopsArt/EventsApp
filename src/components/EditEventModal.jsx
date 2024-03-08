@@ -20,8 +20,15 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
     const savedEvent = localStorage.getItem("editedEvent");
     return savedEvent ? JSON.parse(savedEvent) : event;
   });
-  const { events, setEvents, users, setUsers, categories, setCategories } =
-    useContext(EventsContext);
+  const {
+    events,
+    setEvents,
+    users,
+    setUsers,
+    categories,
+    setCategories,
+    updateEvent,
+  } = useContext(EventsContext);
   const toast = useToast();
 
   useEffect(() => {
@@ -53,20 +60,28 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
       createdBy: userId,
     };
 
-    const updatedEvents = events.map((ev) =>
-      ev.id === updatedEvent.id ? updatedEvent : ev
-    );
-    setEvents(updatedEvents);
-
-    toast({
-      title: "Event Updated",
-      description: "The event has been successfully updated.",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
-
-    onClose();
+    try {
+      await updateEvent(updatedEvent);
+      setEvents(
+        events.map((ev) => (ev.id === updatedEvent.id ? updatedEvent : ev))
+      );
+      toast({
+        title: "Event Updated",
+        description: "The event has been successfully updated.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was an error updating the event.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const createCategory = async (name) => {
