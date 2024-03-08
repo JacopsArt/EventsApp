@@ -12,7 +12,7 @@ import {
   FormLabel,
   Input,
 } from "@chakra-ui/react";
-import { EventsContext } from "../EventsContext"; // Pas dit pad aan naar de locatie van uw EventsContext
+import { EventsContext } from "../EventsContext";
 
 const AddEventModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -26,7 +26,9 @@ const AddEventModal = ({ isOpen, onClose }) => {
     createdBy: "",
     userImage: "",
   });
-  const { addEvent } = useContext(EventsContext);
+
+  const { addEvent, addCategory, users, setUsers, categories } =
+    useContext(EventsContext);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,64 +39,44 @@ const AddEventModal = ({ isOpen, onClose }) => {
 
     let userId, categoryId;
 
-    try {
-      // Verwerken van de categorie
-      const catResponse = await fetch("http://localhost:3000/categories");
-      const categories = await catResponse.json();
-      const existingCategory = categories.find(
-        (cat) => cat.name === formData.category
-      );
-
-      if (existingCategory) {
-        categoryId = existingCategory.id;
-      } else {
-        const newCatResponse = await fetch("http://localhost:3000/categories", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: formData.category }),
-        });
-        const newCategory = await newCatResponse.json();
-        categoryId = newCategory.id;
-      }
-
-      // Verwerken van de gebruiker
-      const userResponse = await fetch("http://localhost:3000/users");
-      const users = await userResponse.json();
-      const existingUser = users.find(
-        (user) => user.name === formData.createdBy
-      );
-
-      if (existingUser) {
-        userId = existingUser.id;
-      } else {
-        const newUserResponse = await fetch("http://localhost:3000/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.createdBy,
-            image: formData.userImage,
-          }),
-        });
-        const newUser = await newUserResponse.json();
-        userId = newUser.id;
-      }
-
-      // Voeg het nieuwe event toe
-      await addEvent({
-        title: formData.title,
-        description: formData.description,
-        image: formData.image,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        location: formData.location,
-        createdBy: userId,
-        categoryIds: [categoryId],
+    const existingUser = users.find((user) => user.name === formData.createdBy);
+    if (existingUser) {
+      userId = existingUser.id;
+    } else {
+      const newUserResponse = await fetch("http://localhost:3000/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.createdBy,
+          image: formData.userImage,
+        }),
       });
-
-      onClose();
-    } catch (error) {
-      console.error("Error:", error);
+      const newUser = await newUserResponse.json();
+      setUsers([...users, newUser]);
+      userId = newUser.id;
     }
+
+    const existingCategory = categories.find(
+      (cat) => cat.name === formData.category
+    );
+    if (existingCategory) {
+      categoryId = existingCategory.id;
+    } else {
+      categoryId = await addCategory({ name: formData.category });
+    }
+
+    await addEvent({
+      title: formData.title,
+      description: formData.description,
+      image: formData.image,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      location: formData.location,
+      createdBy: userId,
+      categoryIds: [categoryId],
+    });
+
+    onClose();
   };
 
   return (

@@ -33,22 +33,24 @@ export const EventsProvider = ({ children }) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(eventData),
     });
-
     const newEvent = await response.json();
-    setEvents([...events, newEvent]);
+    setEvents((prevEvents) => [...prevEvents, newEvent]);
   };
 
-  const deleteEvent = async (eventId) => {
-    await fetch(`http://localhost:3000/events/${eventId}`, {
-      method: "DELETE",
+  const addCategory = async (categoryData) => {
+    const response = await fetch("http://localhost:3000/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(categoryData),
     });
-
-    setEvents(events.filter((event) => event.id !== eventId));
+    const newCategory = await response.json();
+    setCategories((prevCategories) => [...prevCategories, newCategory]);
+    return newCategory.id;
   };
 
   return (
     <EventsContext.Provider
-      value={{ events, users, categories, addEvent, deleteEvent }}
+      value={{ events, users, categories, addEvent, addCategory }}
     >
       {children}
     </EventsContext.Provider>
