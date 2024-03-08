@@ -16,54 +16,40 @@ import {
 import { EventsContext } from "../EventsContext";
 
 export const EditEventModal = ({ isOpen, onClose, event }) => {
-  const [editedEvent, setEditedEvent] = useState(() => {
-    const savedEvent = localStorage.getItem("editedEvent");
-    return savedEvent ? JSON.parse(savedEvent) : event;
-  });
-  const {
-    events,
-    setEvents,
-    users,
-    setUsers,
-    categories,
-    setCategories,
-    updateEvent,
-  } = useContext(EventsContext);
+  const [editedEvent, setEditedEvent] = useState(event);
+  const { events, setEvents, categories, updateEvent } =
+    useContext(EventsContext);
   const toast = useToast();
 
   useEffect(() => {
-    localStorage.setItem("editedEvent", JSON.stringify(editedEvent));
-  }, [editedEvent]);
+    setEditedEvent(event);
+  }, [event]);
 
   const handleInputChange = (e) => {
     setEditedEvent({ ...editedEvent, [e.target.name]: e.target.value });
   };
 
+  const handleCategoryChange = (value) => {
+    const categoryNames = value.split(",").map((name) => name.trim());
+    const categoryIds = categoryNames
+      .map((name) => {
+        if (!name) return null;
+        const category = categories.find(
+          (cat) => cat.name && cat.name.toLowerCase() === name.toLowerCase()
+        );
+        return category ? category.id : null;
+      })
+      .filter((id) => id != null);
+
+    setEditedEvent({ ...editedEvent, categoryIds });
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
-    let categoryId = categories.find(
-      (cat) => cat.name === editedEvent.categoryName
-    )?.id;
-    if (!categoryId) {
-      categoryId = await createCategory(editedEvent.categoryName);
-    }
-
-    let userId = users.find((user) => user.name === editedEvent.userName)?.id;
-    if (!userId) {
-      userId = await createUser(editedEvent.userName, editedEvent.userImage);
-    }
-
-    const updatedEvent = {
-      ...editedEvent,
-      categoryIds: [categoryId],
-      createdBy: userId,
-    };
-
     try {
-      await updateEvent(updatedEvent);
+      await updateEvent(editedEvent);
       setEvents(
-        events.map((ev) => (ev.id === updatedEvent.id ? updatedEvent : ev))
+        events.map((ev) => (ev.id === editedEvent.id ? editedEvent : ev))
       );
       toast({
         title: "Event Updated",
@@ -82,28 +68,6 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
         isClosable: true,
       });
     }
-  };
-
-  const createCategory = async (name) => {
-    const response = await fetch("http://localhost:3000/categories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    const newCategory = await response.json();
-    setCategories([...categories, newCategory]);
-    return newCategory.id;
-  };
-
-  const createUser = async (name, image) => {
-    const response = await fetch("http://localhost:3000/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, image }),
-    });
-    const newUser = await response.json();
-    setUsers([...users, newUser]);
-    return newUser.id;
   };
 
   return (
@@ -139,6 +103,33 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
               />
             </FormControl>
             <FormControl mt={4}>
+              <FormLabel>User Name</FormLabel>
+              <Input
+                name="userName"
+                value={editedEvent.userName || ""}
+                onChange={handleInputChange}
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>User Image URL</FormLabel>
+              <Input
+                name="userImage"
+                value={editedEvent.userImage || ""}
+                onChange={handleInputChange}
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Category Names</FormLabel>
+              <Input
+                value={
+                  editedEvent.categoryIds
+                    ?.map((id) => categories.find((cat) => cat.id === id)?.name)
+                    .join(", ") || ""
+                }
+                onChange={(e) => handleCategoryChange(e.target.value)}
+              />
+            </FormControl>
+            <FormControl mt={4}>
               <FormLabel>Start Time</FormLabel>
               <Input
                 type="datetime-local"
@@ -153,30 +144,6 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
                 type="datetime-local"
                 name="endTime"
                 value={editedEvent.endTime || ""}
-                onChange={handleInputChange}
-              />
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>Category</FormLabel>
-              <Input
-                name="categoryName"
-                value={editedEvent.categoryName || ""}
-                onChange={handleInputChange}
-              />
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>User</FormLabel>
-              <Input
-                name="userName"
-                value={editedEvent.userName || ""}
-                onChange={handleInputChange}
-              />
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>User Image URL</FormLabel>
-              <Input
-                name="userImage"
-                value={editedEvent.userImage || ""}
                 onChange={handleInputChange}
               />
             </FormControl>

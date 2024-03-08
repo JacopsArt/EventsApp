@@ -22,11 +22,17 @@ export const EventsPage = () => {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
 
+  const getCategoryNames = (categoryIds) => {
+    return categoryIds
+      .map((id) => categories.find((cat) => cat.id === Number(id))?.name)
+      .filter(Boolean)
+      .join(", ");
+  };
+
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
       const matchesSearch =
-        event.title &&
-        event.title.toLowerCase().includes(search.toLowerCase());
+        event.title && event.title.toLowerCase().includes(search.toLowerCase());
       const matchesCategory =
         (categories && categoryFilter === "") ||
         (categories &&
@@ -94,19 +100,7 @@ export const EventsPage = () => {
                   End Time: {new Date(event.endTime).toLocaleString()}
                 </Text>
                 <Text color="gray.600" mb={1}>
-                  Categories:{" "}
-                  {Array.isArray(event.categoryIds)
-                    ? event.categoryIds
-                        .map(
-                          (id) =>
-                            categories.find(
-                              (category) => category && category.id === id
-                            )?.name
-                        )
-                        .join(", ")
-                    : categories.find(
-                        (category) => category && category.id === event.categoryIds
-                      )?.name}
+                  Categories: {getCategoryNames(event.categoryIds)}
                 </Text>
               </Box>
             </Box>
@@ -132,5 +126,3 @@ export const EventsPage = () => {
     </>
   );
 };
-
-export default EventsPage;

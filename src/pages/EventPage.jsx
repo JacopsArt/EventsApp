@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -26,25 +26,34 @@ export const EventPage = () => {
   const { events, users, categories, deleteEvent } = useContext(EventsContext);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const event = events.find((e) => e.id.toString() === eventId);
-  const user = event ? users.find((u) => u.id === event.createdBy) : null;
+  const [event, setEvent] = useState(null);
 
-  const formatDateTime = (datetime) =>
-    new Date(datetime).toLocaleString("en-US", {
+  useEffect(() => {
+    const foundEvent = events.find((e) => e.id.toString() === eventId);
+    setEvent(foundEvent);
+  }, [events, eventId]);
+
+  const formatDateTime = (datetime) => {
+    return new Date(datetime).toLocaleString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "numeric",
       minute: "numeric",
     });
+  };
 
   const getCategoryNames = (categoryIds) => {
-    if (!Array.isArray(categoryIds)) return "";
-    return categories
-      .filter((category) => categoryIds.includes(category.id))
-      .map((category) => category.name)
+    return categoryIds
+      .map(
+        (id) =>
+          categories.find((cat) => cat.id.toString() === id.toString())?.name
+      )
+      .filter(Boolean)
       .join(", ");
   };
+
+  const user = event ? users.find((u) => u.id === event.createdBy) : null;
 
   const handleEdit = () => {
     setIsEditModalOpen(true);
@@ -83,6 +92,7 @@ export const EventPage = () => {
       <Stack mt={6} spacing={3}>
         <Heading size="lg">{event.title}</Heading>
         <Text fontSize="md">{event.description}</Text>
+        <Text>Location: {event.location}</Text>
         <Text>Start Time: {formatDateTime(event.startTime)}</Text>
         <Text>End Time: {formatDateTime(event.endTime)}</Text>
         <Text>Categories: {getCategoryNames(event.categoryIds)}</Text>
