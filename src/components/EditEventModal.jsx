@@ -53,7 +53,6 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
       createdBy: userId,
     };
 
-   
     const updatedEvents = events.map((ev) =>
       ev.id === updatedEvent.id ? updatedEvent : ev
     );
@@ -180,5 +179,3 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
     </Modal>
   );
 };
-
-export default EditEventModal;

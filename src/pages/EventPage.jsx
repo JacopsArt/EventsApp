@@ -55,8 +55,12 @@ export const EventPage = () => {
   };
 
   const confirmDelete = async () => {
-    await deleteEvent(event.id);
-    navigate("/");
+    try {
+      await deleteEvent(event.id);
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
   };
 
   if (!event) {

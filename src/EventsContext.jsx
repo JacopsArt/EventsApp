@@ -76,10 +76,23 @@ export const EventsProvider = ({ children }) => {
           event.id === updatedEvent.id ? updatedEvent : event
         )
       );
-
-      loadData();
     } catch (error) {
       console.error("Error updating event:", error);
+      throw error;
+    }
+  };
+
+  const deleteEvent = async (eventId) => {
+    try {
+      await fetch(`http://localhost:3000/events/${eventId}`, {
+        method: "DELETE",
+      });
+
+      setEvents((prevEvents) =>
+        prevEvents.filter((event) => event.id !== eventId)
+      );
+    } catch (error) {
+      console.error("Error deleting event:", error);
       throw error;
     }
   };
@@ -93,6 +106,7 @@ export const EventsProvider = ({ children }) => {
     setCategories,
     addEvent,
     updateEvent,
+    deleteEvent,
   };
 
   return (
