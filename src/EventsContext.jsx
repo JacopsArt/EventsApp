@@ -62,6 +62,21 @@ export const EventsProvider = ({ children }) => {
     }
   };
 
+  const deleteEvent = async (eventId) => {
+    try {
+      await fetch(`http://localhost:3000/events/${eventId}`, {
+        method: "DELETE",
+      });
+
+      setEvents((prevEvents) =>
+        prevEvents.filter((event) => event.id !== eventId)
+      );
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      throw error;
+    }
+  };
+
   const contextValue = {
     events,
     setEvents,
@@ -70,6 +85,7 @@ export const EventsProvider = ({ children }) => {
     categories,
     setCategories,
     updateEvent,
+    deleteEvent,
   };
 
   return (
