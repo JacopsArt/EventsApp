@@ -46,10 +46,10 @@ export const AddEventModal = ({ isOpen, onClose }) => {
   };
 
   const addUser = async (userData) => {
-    const response = await fetch('http://localhost:3000/users', {
-      method: 'POST',
+    const response = await fetch("http://localhost:3000/users", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(userData),
     });
@@ -61,14 +61,19 @@ export const AddEventModal = ({ isOpen, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let categoryId = categories.find(cat => cat.name === formData.category)?.id;
+    let categoryId = categories.find(
+      (cat) => cat.name === formData.category
+    )?.id;
     if (!categoryId) {
       categoryId = await addCategory(formData.category);
     }
 
-    let userId = users.find(user => user.name === formData.createdBy)?.id;
+    let userId = users.find((user) => user.name === formData.createdBy)?.id;
     if (!userId) {
-      userId = await addUser({ name: formData.createdBy, image: formData.userImage });
+      userId = await addUser({
+        name: formData.createdBy,
+        image: formData.userImage,
+      });
     }
 
     await addEvent({

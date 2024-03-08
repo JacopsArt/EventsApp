@@ -35,6 +35,26 @@ export const EventsProvider = ({ children }) => {
     setUsers(data);
   };
 
+  const addEvent = async (eventData) => {
+    try {
+      const response = await fetch("http://localhost:3000/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(eventData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error adding event");
+      }
+
+      const newEvent = await response.json();
+      setEvents([...events, newEvent]);
+    } catch (error) {
+      console.error("Error adding event:", error);
+      throw error;
+    }
+  };
+
   const updateEvent = async (editedEvent) => {
     try {
       const response = await fetch(
@@ -47,7 +67,7 @@ export const EventsProvider = ({ children }) => {
       );
 
       if (!response.ok) {
-        throw new Error('Error updating event');
+        throw new Error("Error updating event");
       }
 
       const updatedEvent = await response.json();
@@ -64,28 +84,6 @@ export const EventsProvider = ({ children }) => {
     }
   };
 
-  const addEvent = async (newEvent) => {
-    try {
-      const response = await fetch("http://localhost:3000/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEvent),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error adding event');
-      }
-
-      const addedEvent = await response.json();
-      setEvents((prevEvents) => [...prevEvents, addedEvent]);
-
-      loadData();
-    } catch (error) {
-      console.error("Error adding event:", error);
-      throw error;
-    }
-  };
-
   const contextValue = {
     events,
     setEvents,
@@ -93,8 +91,8 @@ export const EventsProvider = ({ children }) => {
     setUsers,
     categories,
     setCategories,
-    updateEvent,
     addEvent,
+    updateEvent,
   };
 
   return (

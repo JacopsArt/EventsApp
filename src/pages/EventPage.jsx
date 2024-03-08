@@ -23,39 +23,31 @@ import { EventsContext } from "../EventsContext";
 export const EventPage = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
-  const { events, users, categories, updateEvent, deleteEvent, refreshData } =
-    useContext(EventsContext);
+  const { events, users, categories, deleteEvent } = useContext(EventsContext);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-
-  if (!events || !users || !categories) {
-    return <Heading>Loading...</Heading>;
-  }
-
   const event = events.find((e) => e.id.toString() === eventId);
   const user = event ? users.find((u) => u.id === event.createdBy) : null;
 
-  const formatDateTime = (datetime) => {
-    return new Date(datetime).toLocaleString("en-US", {
+  const formatDateTime = (datetime) =>
+    new Date(datetime).toLocaleString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "numeric",
       minute: "numeric",
     });
-  };
 
   const getCategoryNames = (categoryIds) => {
+    if (!Array.isArray(categoryIds)) return "";
     return categories
       .filter((category) => categoryIds.includes(category.id))
       .map((category) => category.name)
       .join(", ");
   };
 
-  const handleSave = async (editedEvent) => {
-    await updateEvent(editedEvent);
-    refreshData();
-    setIsEditModalOpen(false);
+  const handleEdit = () => {
+    setIsEditModalOpen(true);
   };
 
   const handleDelete = () => {
@@ -63,8 +55,7 @@ export const EventPage = () => {
   };
 
   const confirmDelete = async () => {
-    await deleteEvent(eventId);
-    refreshData();
+    await deleteEvent(event.id);
     navigate("/");
   };
 
@@ -88,7 +79,6 @@ export const EventPage = () => {
       <Stack mt={6} spacing={3}>
         <Heading size="lg">{event.title}</Heading>
         <Text fontSize="md">{event.description}</Text>
-        <Text>Location: {event.location}</Text>
         <Text>Start Time: {formatDateTime(event.startTime)}</Text>
         <Text>End Time: {formatDateTime(event.endTime)}</Text>
         <Text>Categories: {getCategoryNames(event.categoryIds)}</Text>
@@ -101,7 +91,7 @@ export const EventPage = () => {
       </Stack>
       <Divider my={4} />
       <Flex justifyContent="center" gap="4">
-        <Button size="md" colorScheme="blue" onClick={() => setIsEditModalOpen(true)}>
+        <Button size="md" colorScheme="blue" onClick={handleEdit}>
           Edit
         </Button>
         <Button size="md" colorScheme="red" onClick={handleDelete}>
@@ -112,9 +102,6 @@ export const EventPage = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         event={event}
-        onSave={handleSave}
-        categories={categories}
-        users={users}
       />
       <AlertDialog isOpen={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
         <AlertDialogOverlay />
@@ -123,7 +110,8 @@ export const EventPage = () => {
             Delete Event
           </AlertDialogHeader>
           <AlertDialogBody>
-            Are you sure you want to delete this event? This action cannot be undone.
+            Are you sure you want to delete this event? This action cannot be
+            undone.
           </AlertDialogBody>
           <AlertDialogFooter>
             <Button onClick={() => setIsAlertOpen(false)}>Cancel</Button>
