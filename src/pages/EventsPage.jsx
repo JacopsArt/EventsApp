@@ -24,16 +24,21 @@ export const EventsPage = () => {
 
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
-      const matchesSearch = event.title
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      const matchesSearch =
+        event.title && event.title.toLowerCase().includes(search.toLowerCase());
       const matchesCategory =
-        categoryFilter === "" ||
-        categories
-          .filter((category) =>
-            category.name.toLowerCase().includes(categoryFilter.toLowerCase())
-          )
-          .some((category) => event.categoryIds.includes(category.id));
+        (categories && categoryFilter === "") ||
+        (categories &&
+          categories
+            .filter(
+              (category) =>
+                category &&
+                category.name &&
+                category.name
+                  .toLowerCase()
+                  .includes(categoryFilter.toLowerCase())
+            )
+            .some((category) => event.categoryIds.includes(category.id)));
 
       return matchesSearch && matchesCategory;
     });
@@ -47,11 +52,10 @@ export const EventsPage = () => {
       <SearchInput value={search} onChange={(e) => setSearch(e.target.value)} />
       <CategoryFilter
         value={categoryFilter}
-        onChange={(e) => setCategoryFilter(e.target.value)}
+        onChange={(value) => setCategoryFilter(value)}
         categories={categories}
       />
       <Container maxW="80%" mt="6" mb="12">
-        {" "}
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={5}>
           {filteredEvents.map((event) => (
             <Box
@@ -87,7 +91,9 @@ export const EventsPage = () => {
                   {event.categoryIds
                     .map(
                       (id) =>
-                        categories.find((category) => category.id === id)?.name
+                        categories.find(
+                          (category) => category && category.id === id
+                        )?.name
                     )
                     .join(", ")}
                 </Text>
@@ -115,3 +121,5 @@ export const EventsPage = () => {
     </>
   );
 };
+
+export default EventsPage;
