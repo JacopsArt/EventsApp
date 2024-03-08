@@ -38,8 +38,18 @@ export const EventsProvider = ({ children }) => {
     setEvents([...events, newEvent]);
   };
 
+  const deleteEvent = async (eventId) => {
+    await fetch(`http://localhost:3000/events/${eventId}`, {
+      method: "DELETE",
+    });
+
+    setEvents(events.filter((event) => event.id !== eventId));
+  };
+
   return (
-    <EventsContext.Provider value={{ events, users, categories, addEvent }}>
+    <EventsContext.Provider
+      value={{ events, users, categories, addEvent, deleteEvent }}
+    >
       {children}
     </EventsContext.Provider>
   );

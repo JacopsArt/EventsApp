@@ -23,22 +23,20 @@ import { EventsContext } from "../EventsContext";
 export const EventPage = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
-  const { events, users, categories, updateEvent, deleteEvent, refreshEvents } =
-    useContext(EventsContext);
+  const { events, users, categories, deleteEvent } = useContext(EventsContext);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const event = events.find((e) => e.id.toString() === eventId);
   const user = event ? users.find((u) => u.id === event.createdBy) : null;
 
-  const formatDateTime = (datetime) => {
-    return new Date(datetime).toLocaleString("en-US", {
+  const formatDateTime = (datetime) =>
+    new Date(datetime).toLocaleString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "numeric",
       minute: "numeric",
     });
-  };
 
   const getCategoryNames = (categoryIds) => {
     if (!Array.isArray(categoryIds)) return "";
@@ -48,10 +46,8 @@ export const EventPage = () => {
       .join(", ");
   };
 
-  const handleSave = async (editedEvent) => {
-    await updateEvent(editedEvent);
-    setIsEditModalOpen(false);
-    refreshEvents();
+  const handleEdit = () => {
+    setIsEditModalOpen(true);
   };
 
   const handleDelete = () => {
@@ -59,8 +55,7 @@ export const EventPage = () => {
   };
 
   const confirmDelete = async () => {
-    await deleteEvent(eventId);
-    refreshEvents();
+    await deleteEvent(event.id);
     navigate("/");
   };
 
@@ -82,8 +77,8 @@ export const EventPage = () => {
         <Image src={event.image} alt={event.title} borderRadius="lg" />
       )}
       <Stack mt={6} spacing={3}>
-        <Heading size="lg">{event.title || "No Title"}</Heading>
-        <Text fontSize="md">{event.description || "No Description"}</Text>
+        <Heading size="lg">{event.title}</Heading>
+        <Text fontSize="md">{event.description}</Text>
         <Text>Start Time: {formatDateTime(event.startTime)}</Text>
         <Text>End Time: {formatDateTime(event.endTime)}</Text>
         <Text>Categories: {getCategoryNames(event.categoryIds)}</Text>
@@ -96,11 +91,7 @@ export const EventPage = () => {
       </Stack>
       <Divider my={4} />
       <Flex justifyContent="center" gap="4">
-        <Button
-          size="md"
-          colorScheme="blue"
-          onClick={() => setIsEditModalOpen(true)}
-        >
+        <Button size="md" colorScheme="blue" onClick={handleEdit}>
           Edit
         </Button>
         <Button size="md" colorScheme="red" onClick={handleDelete}>
@@ -111,10 +102,6 @@ export const EventPage = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         event={event}
-        onSave={handleSave}
-        categories={categories}
-        users={users}
-        refreshEvents={refreshEvents}
       />
       <AlertDialog isOpen={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
         <AlertDialogOverlay />
