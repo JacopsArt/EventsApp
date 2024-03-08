@@ -6,51 +6,40 @@ export const EventsProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
   const [users, setUsers] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [eventsRes, categoriesRes, usersRes] = await Promise.all([
-          fetch("http://localhost:3000/events"),
-          fetch("http://localhost:3000/categories"),
-          fetch("http://localhost:3000/users"),
-        ]);
+      const eventsResponse = await fetch("http://localhost:3000/events");
+      const eventsData = await eventsResponse.json();
+      setEvents(eventsData);
 
-        if (!eventsRes.ok || !categoriesRes.ok || !usersRes.ok) {
-          throw new Error("HTTP error while fetching data");
-        }
+      const categoriesResponse = await fetch(
+        "http://localhost:3000/categories"
+      );
+      const categoriesData = await categoriesResponse.json();
+      setCategories(categoriesData);
 
-        const [eventsData, categoriesData, usersData] = await Promise.all([
-          eventsRes.json(),
-          categoriesRes.json(),
-          usersRes.json(),
-        ]);
-
-        setEvents(eventsData);
-        setCategories(categoriesData);
-        setUsers(usersData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError(error.message);
-      }
+      const usersResponse = await fetch("http://localhost:3000/users");
+      const usersData = await usersResponse.json();
+      setUsers(usersData);
     };
 
     fetchData();
   }, []);
 
-  const contextValue = {
-    events,
-    setEvents,
-    users,
-    setUsers,
-    categories,
-    setCategories,
-    error,
+  const addEvent = async (eventData) => {
+    const response = await fetch("http://localhost:3000/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(eventData),
+    });
+
+    const newEvent = await response.json();
+    setEvents([...events, newEvent]);
   };
 
   return (
-    <EventsContext.Provider value={contextValue}>
+    <EventsContext.Provider value={{ events, users, categories, addEvent }}>
       {children}
     </EventsContext.Provider>
   );

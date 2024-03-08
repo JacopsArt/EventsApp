@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -12,8 +12,9 @@ import {
   FormLabel,
   Input,
 } from "@chakra-ui/react";
+import { EventsContext } from "../EventsContext"; // Pas dit pad aan naar de locatie van uw EventsContext
 
-const AddEventModal = ({ isOpen, onClose, refreshEvents }) => {
+const AddEventModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     title: "",
     image: "",
@@ -25,6 +26,7 @@ const AddEventModal = ({ isOpen, onClose, refreshEvents }) => {
     createdBy: "",
     userImage: "",
   });
+  const { addEvent } = useContext(EventsContext);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,10 +35,10 @@ const AddEventModal = ({ isOpen, onClose, refreshEvents }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let userId;
-    let categoryId;
+    let userId, categoryId;
 
     try {
+      // Verwerken van de categorie
       const catResponse = await fetch("http://localhost:3000/categories");
       const categories = await catResponse.json();
       const existingCategory = categories.find(
@@ -55,6 +57,7 @@ const AddEventModal = ({ isOpen, onClose, refreshEvents }) => {
         categoryId = newCategory.id;
       }
 
+      // Verwerken van de gebruiker
       const userResponse = await fetch("http://localhost:3000/users");
       const users = await userResponse.json();
       const existingUser = users.find(
@@ -76,23 +79,19 @@ const AddEventModal = ({ isOpen, onClose, refreshEvents }) => {
         userId = newUser.id;
       }
 
-      await fetch("http://localhost:3000/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          image: formData.image,
-          startTime: formData.startTime,
-          endTime: formData.endTime,
-          location: formData.location,
-          createdBy: userId,
-          categoryIds: [categoryId],
-        }),
+      // Voeg het nieuwe event toe
+      await addEvent({
+        title: formData.title,
+        description: formData.description,
+        image: formData.image,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        location: formData.location,
+        createdBy: userId,
+        categoryIds: [categoryId],
       });
 
       onClose();
-      refreshEvents();
     } catch (error) {
       console.error("Error:", error);
     }
