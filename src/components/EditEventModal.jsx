@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -12,67 +12,72 @@ import {
   FormLabel,
   Input,
 } from "@chakra-ui/react";
+import { EventsContext } from "../EventsContext";
 
-const EditEventModal = ({
-  isOpen,
-  onClose,
-  event,
-  onSave,
-  categories,
-  users,
-  refreshEvents,
-}) => {
+const EditEventModal = ({ isOpen, onClose, event }) => {
   const [editedEvent, setEditedEvent] = useState(event);
+  const { events, setEvents, users, setUsers, categories, setCategories } =
+    useContext(EventsContext);
 
   useEffect(() => {
-    setEditedEvent(event);
+    setEditedEvent(event); // Zet de initiële staat wanneer het evenement verandert
   }, [event]);
 
   const handleInputChange = (e) => {
-    setEditedEvent({ ...editedEvent, [e.target.name]: e.target.value });
+    setEditedEvent({ ...editedEvent, [e.target.name]: e.target.value }); // Verwerk wijzigingen in formulierinputvelden
   };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const categoryId =
-        categories.find((cat) => cat.name === editedEvent.categoryName)?.id ||
-        (await createCategory(editedEvent.categoryName));
-      const userId =
-        users.find((user) => user.name === editedEvent.userName)?.id ||
-        (await createUser(editedEvent.userName, editedEvent.userImage));
-
-      const updatedEvent = {
-        ...editedEvent,
-        categoryIds: [categoryId],
-        createdBy: userId,
-      };
-      await onSave(updatedEvent);
-      onClose();
-      refreshEvents();
-    } catch (error) {
-      console.error("There was a problem updating the event:", error);
+    let categoryId = categories.find(
+      (cat) => cat.name === editedEvent.categoryName
+    )?.id;
+    if (!categoryId) {
+      categoryId = await createCategory(editedEvent.categoryName);
     }
+
+    let userId = users.find((user) => user.name === editedEvent.userName)?.id;
+    if (!userId) {
+      userId = await createUser(editedEvent.userName, editedEvent.userImage);
+    }
+
+    const updatedEvent = {
+      ...editedEvent,
+      categoryIds: [categoryId],
+      createdBy: userId,
+    };
+
+    // Update event in state and possibly in your backend
+    const updatedEvents = events.map((ev) =>
+      ev.id === updatedEvent.id ? updatedEvent : ev
+    );
+    setEvents(updatedEvents);
+
+    onClose(); // Sluit de modal na het bijwerken van het evenement
   };
 
   const createCategory = async (name) => {
+    // Implementeer hier uw logica om een nieuwe categorie te maken
     const response = await fetch("http://localhost:3000/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),
     });
     const newCategory = await response.json();
+    setCategories([...categories, newCategory]);
     return newCategory.id;
   };
 
   const createUser = async (name, image) => {
+    // Implementeer hier uw logica om een nieuwe gebruiker te maken
     const response = await fetch("http://localhost:3000/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, image }),
     });
     const newUser = await response.json();
+    setUsers([...users, newUser]);
     return newUser.id;
   };
 
@@ -88,7 +93,7 @@ const EditEventModal = ({
               <FormLabel>Title</FormLabel>
               <Input
                 name="title"
-                value={editedEvent.title}
+                value={editedEvent.title || ""}
                 onChange={handleInputChange}
               />
             </FormControl>
@@ -96,7 +101,7 @@ const EditEventModal = ({
               <FormLabel>Description</FormLabel>
               <Input
                 name="description"
-                value={editedEvent.description}
+                value={editedEvent.description || ""}
                 onChange={handleInputChange}
               />
             </FormControl>
@@ -104,7 +109,7 @@ const EditEventModal = ({
               <FormLabel>Image URL</FormLabel>
               <Input
                 name="image"
-                value={editedEvent.image}
+                value={editedEvent.image || ""}
                 onChange={handleInputChange}
               />
             </FormControl>
@@ -113,7 +118,7 @@ const EditEventModal = ({
               <Input
                 type="datetime-local"
                 name="startTime"
-                value={editedEvent.startTime}
+                value={editedEvent.startTime || ""}
                 onChange={handleInputChange}
               />
             </FormControl>
@@ -122,7 +127,7 @@ const EditEventModal = ({
               <Input
                 type="datetime-local"
                 name="endTime"
-                value={editedEvent.endTime}
+                value={editedEvent.endTime || ""}
                 onChange={handleInputChange}
               />
             </FormControl>

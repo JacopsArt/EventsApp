@@ -6,50 +6,37 @@ export const EventsProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
   const [users, setUsers] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:3000/events");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const [eventsRes, categoriesRes, usersRes] = await Promise.all([
+          fetch("http://localhost:3000/events"),
+          fetch("http://localhost:3000/categories"),
+          fetch("http://localhost:3000/users"),
+        ]);
+
+        if (!eventsRes.ok || !categoriesRes.ok || !usersRes.ok) {
+          throw new Error("HTTP error while fetching data");
         }
-        const data = await response.json();
-        setEvents(data);
+
+        const [eventsData, categoriesData, usersData] = await Promise.all([
+          eventsRes.json(),
+          categoriesRes.json(),
+          usersRes.json(),
+        ]);
+
+        setEvents(eventsData);
+        setCategories(categoriesData);
+        setUsers(usersData);
       } catch (error) {
-        console.error("Error fetching events:", error);
+        console.error("Error fetching data:", error);
+        setError(error.message);
       }
     };
 
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/categories");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setCategories(data);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/users");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setUsers(data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    fetchEvents();
-    fetchCategories();
-    fetchUsers();
+    fetchData();
   }, []);
 
   const contextValue = {
@@ -59,6 +46,7 @@ export const EventsProvider = ({ children }) => {
     setUsers,
     categories,
     setCategories,
+    error,
   };
 
   return (
