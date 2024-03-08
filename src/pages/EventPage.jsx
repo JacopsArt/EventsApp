@@ -84,7 +84,7 @@ export const EventPage = () => {
         <Text>Categories: {getCategoryNames(event.categoryIds)}</Text>
         {user && (
           <Flex align="center">
-            <Avatar size="sm" src={user.image} name={user.name} mr={2} />
+            <Avatar size="sm" src={user.image} name={user.name || ""} mr={2} />
             <Text fontSize="md">{user.name}</Text>
           </Flex>
         )}

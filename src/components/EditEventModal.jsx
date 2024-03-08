@@ -16,14 +16,17 @@ import {
 import { EventsContext } from "../EventsContext";
 
 export const EditEventModal = ({ isOpen, onClose, event }) => {
-  const [editedEvent, setEditedEvent] = useState(event);
+  const [editedEvent, setEditedEvent] = useState(() => {
+    const savedEvent = localStorage.getItem("editedEvent");
+    return savedEvent ? JSON.parse(savedEvent) : event;
+  });
   const { events, setEvents, users, setUsers, categories, setCategories } =
     useContext(EventsContext);
   const toast = useToast();
 
   useEffect(() => {
-    setEditedEvent(event);
-  }, [event]);
+    localStorage.setItem("editedEvent", JSON.stringify(editedEvent));
+  }, [editedEvent]);
 
   const handleInputChange = (e) => {
     setEditedEvent({ ...editedEvent, [e.target.name]: e.target.value });
@@ -50,7 +53,7 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
       createdBy: userId,
     };
 
-    // Update event in state and possibly in your backend
+   
     const updatedEvents = events.map((ev) =>
       ev.id === updatedEvent.id ? updatedEvent : ev
     );
@@ -68,7 +71,6 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
   };
 
   const createCategory = async (name) => {
-    // Implementeer hier uw logica om een nieuwe categorie te maken
     const response = await fetch("http://localhost:3000/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -80,7 +82,6 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
   };
 
   const createUser = async (name, image) => {
-    // Implementeer hier uw logica om een nieuwe gebruiker te maken
     const response = await fetch("http://localhost:3000/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -179,3 +180,5 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
     </Modal>
   );
 };
+
+export default EditEventModal;
