@@ -77,6 +77,26 @@ export const EventsProvider = ({ children }) => {
     }
   };
 
+  const addEvent = async (newEvent) => {
+    try {
+      const response = await fetch(`http://localhost:3000/events`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newEvent),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error adding new event");
+      }
+
+      const addedEvent = await response.json();
+      setEvents((prevEvents) => [...prevEvents, addedEvent]);
+    } catch (error) {
+      console.error("Error adding new event:", error);
+      throw error;
+    }
+  };
+
   const contextValue = {
     events,
     setEvents,
@@ -86,6 +106,7 @@ export const EventsProvider = ({ children }) => {
     setCategories,
     updateEvent,
     deleteEvent,
+    addEvent,
   };
 
   return (

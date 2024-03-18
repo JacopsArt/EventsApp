@@ -72,6 +72,10 @@ export const EventPage = () => {
     }
   };
 
+  const onEventUpdated = (updatedEvent) => {
+    setEvent(updatedEvent);
+  };
+
   if (!event) {
     return <Heading>Event not found</Heading>;
   }
@@ -116,6 +120,8 @@ export const EventPage = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         event={event}
+        eventId={eventId}
+        onEventUpdated={onEventUpdated}
       />
       <AlertDialog isOpen={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
         <AlertDialogOverlay />

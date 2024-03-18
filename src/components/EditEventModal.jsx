@@ -15,10 +15,15 @@ import {
 } from "@chakra-ui/react";
 import { EventsContext } from "../EventsContext";
 
-export const EditEventModal = ({ isOpen, onClose, event }) => {
+export const EditEventModal = ({
+  isOpen,
+  onClose,
+  event,
+  eventId,
+  onEventUpdated,
+}) => {
   const [editedEvent, setEditedEvent] = useState(event);
-  const { events, setEvents, categories, updateEvent } =
-    useContext(EventsContext);
+  const { updateEvent } = useContext(EventsContext);
   const toast = useToast();
 
   useEffect(() => {
@@ -29,28 +34,14 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
     setEditedEvent({ ...editedEvent, [e.target.name]: e.target.value });
   };
 
-  const handleCategoryChange = (value) => {
-    const categoryNames = value.split(",").map((name) => name.trim());
-    const categoryIds = categoryNames
-      .map((name) => {
-        if (!name) return null;
-        const category = categories.find(
-          (cat) => cat.name && cat.name.toLowerCase() === name.toLowerCase()
-        );
-        return category ? category.id : null;
-      })
-      .filter((id) => id != null);
-
-    setEditedEvent({ ...editedEvent, categoryIds });
-  };
-
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    const updatedEvent = { ...editedEvent, id: eventId };
     try {
-      await updateEvent(editedEvent);
-      setEvents(
-        events.map((ev) => (ev.id === editedEvent.id ? editedEvent : ev))
-      );
+      await updateEvent(updatedEvent);
+      if (onEventUpdated) {
+        onEventUpdated(updatedEvent);
+      }
       toast({
         title: "Event Updated",
         description: "The event has been successfully updated.",
@@ -69,6 +60,15 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
       });
     }
   };
+
+  useEffect(() => {
+    if (!isOpen) {
+      // Refresh event page after modal is closed
+      if (onEventUpdated) {
+        onEventUpdated(editedEvent);
+      }
+    }
+  }, [isOpen]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -103,33 +103,6 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
               />
             </FormControl>
             <FormControl mt={4}>
-              <FormLabel>User Name</FormLabel>
-              <Input
-                name="userName"
-                value={editedEvent.userName || ""}
-                onChange={handleInputChange}
-              />
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>User Image URL</FormLabel>
-              <Input
-                name="userImage"
-                value={editedEvent.userImage || ""}
-                onChange={handleInputChange}
-              />
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>Category Names</FormLabel>
-              <Input
-                value={
-                  editedEvent.categoryIds
-                    ?.map((id) => categories.find((cat) => cat.id === id)?.name)
-                    .join(", ") || ""
-                }
-                onChange={(e) => handleCategoryChange(e.target.value)}
-              />
-            </FormControl>
-            <FormControl mt={4}>
               <FormLabel>Start Time</FormLabel>
               <Input
                 type="datetime-local"
@@ -149,7 +122,7 @@ export const EditEventModal = ({ isOpen, onClose, event }) => {
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" type="submit">
+            <Button colorScheme="blue" mr={3} type="submit">
               Save
             </Button>
             <Button variant="ghost" onClick={onClose}>
