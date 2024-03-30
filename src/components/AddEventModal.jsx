@@ -11,6 +11,7 @@ import {
   FormControl,
   FormLabel,
   Input,
+  useToast,
 } from "@chakra-ui/react";
 import { EventsContext } from "../EventsContext";
 
@@ -29,33 +30,60 @@ export const AddEventModal = ({ isOpen, onClose }) => {
 
   const { addEvent, users, setUsers, categories, setCategories } =
     useContext(EventsContext);
+  const toast = useToast();
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const addCategory = async (name) => {
-    const response = await fetch("http://localhost:3000/categories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    const newCategory = await response.json();
-    setCategories([...categories, newCategory]);
-    return newCategory.id;
+    try {
+      const response = await fetch("http://localhost:3000/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to add category");
+      }
+      const newCategory = await response.json();
+      setCategories([...categories, newCategory]);
+      return newCategory.id;
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add category.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const addUser = async (userData) => {
-    const response = await fetch("http://localhost:3000/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userData),
-    });
-    const newUser = await response.json();
-    setUsers([...users, newUser]);
-    return newUser.id;
+    try {
+      const response = await fetch("http://localhost:3000/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to add user");
+      }
+      const newUser = await response.json();
+      setUsers([...users, newUser]);
+      return newUser.id;
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add user.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -76,13 +104,22 @@ export const AddEventModal = ({ isOpen, onClose }) => {
       });
     }
 
-    await addEvent({
-      ...formData,
-      createdBy: userId,
-      categoryIds: [categoryId],
-    });
-
-    onClose();
+    try {
+      await addEvent({
+        ...formData,
+        createdBy: userId,
+        categoryIds: [categoryId],
+      });
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add event.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   return (

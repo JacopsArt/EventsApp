@@ -1,6 +1,16 @@
 import React, { createContext, useState, useEffect } from "react";
 
-export const EventsContext = createContext();
+export const EventsContext = createContext({
+  events: [],
+  setEvents: () => {},
+  users: [],
+  setUsers: () => {},
+  categories: [],
+  setCategories: () => {},
+  updateEvent: async () => {},
+  deleteEvent: async () => {},
+  addEvent: async () => {},
+});
 
 export const EventsProvider = ({ children }) => {
   const [events, setEvents] = useState([]);

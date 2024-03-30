@@ -68,7 +68,7 @@ export const EditEventModal = ({
         onEventUpdated(editedEvent);
       }
     }
-  }, [isOpen]);
+  }, [isOpen, onEventUpdated, editedEvent]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

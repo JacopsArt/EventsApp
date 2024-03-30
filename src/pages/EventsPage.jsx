@@ -60,7 +60,7 @@ export const EventsPage = () => {
   return (
     <>
       <Heading textAlign="center" my="8">
-        List of events
+        List of Events
       </Heading>
       <SearchInput value={search} onChange={(e) => setSearch(e.target.value)} />
       <CategoryFilter
