@@ -34,12 +34,13 @@ export const EventPage = () => {
   }, [events, eventId]);
 
   const formatDateTime = (datetime) => {
-    return new Date(datetime).toLocaleString("en-US", {
+    return new Date(datetime).toLocaleString("nl-NL", {
       year: "numeric",
       month: "long",
       day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     });
   };
 

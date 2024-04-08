@@ -1,16 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 
-export const EventsContext = createContext({
-  events: [],
-  setEvents: () => {},
-  users: [],
-  setUsers: () => {},
-  categories: [],
-  setCategories: () => {},
-  updateEvent: async () => {},
-  deleteEvent: async () => {},
-  addEvent: async () => {},
-});
+export const EventsContext = createContext();
 
 export const EventsProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
@@ -46,65 +36,45 @@ export const EventsProvider = ({ children }) => {
   };
 
   const updateEvent = async (editedEvent) => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/events/${editedEvent.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editedEvent),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Error updating event");
-      }
-
-      const updatedEvent = await response.json();
-      setEvents((prevEvents) =>
-        prevEvents.map((event) =>
-          event.id === updatedEvent.id ? updatedEvent : event
-        )
-      );
-    } catch (error) {
-      console.error("Error updating event:", error);
-      throw error;
-    }
+    const response = await fetch(`http://localhost:3000/events/${editedEvent.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editedEvent),
+    });
+    const updatedEvent = await response.json();
+    setEvents((prevEvents) =>
+      prevEvents.map((event) => event.id === updatedEvent.id ? updatedEvent : event)
+    );
   };
 
   const deleteEvent = async (eventId) => {
-    try {
-      await fetch(`http://localhost:3000/events/${eventId}`, {
-        method: "DELETE",
-      });
-
-      setEvents((prevEvents) =>
-        prevEvents.filter((event) => event.id !== eventId)
-      );
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      throw error;
-    }
+    await fetch(`http://localhost:3000/events/${eventId}`, {
+      method: "DELETE",
+    });
+    setEvents((prevEvents) =>
+      prevEvents.filter((event) => event.id !== eventId)
+    );
   };
 
   const addEvent = async (newEvent) => {
-    try {
-      const response = await fetch(`http://localhost:3000/events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEvent),
-      });
+    const response = await fetch("http://localhost:3000/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newEvent),
+    });
+    const addedEvent = await response.json();
+    setEvents((prevEvents) => [...prevEvents, addedEvent]);
+  };
 
-      if (!response.ok) {
-        throw new Error("Error adding new event");
-      }
-
-      const addedEvent = await response.json();
-      setEvents((prevEvents) => [...prevEvents, addedEvent]);
-    } catch (error) {
-      console.error("Error adding new event:", error);
-      throw error;
-    }
+  const addCategory = async (newCategory) => {
+    const response = await fetch("http://localhost:3000/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newCategory),
+    });
+    const addedCategory = await response.json();
+    setCategories((prevCategories) => [...prevCategories, addedCategory]);
+    return addedCategory; 
   };
 
   const contextValue = {
@@ -117,6 +87,7 @@ export const EventsProvider = ({ children }) => {
     updateEvent,
     deleteEvent,
     addEvent,
+    addCategory,
   };
 
   return (

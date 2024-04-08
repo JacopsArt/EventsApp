@@ -12,6 +12,10 @@ import {
   FormLabel,
   Input,
   useToast,
+  Tag,
+  TagLabel,
+  TagCloseButton,
+  HStack,
 } from "@chakra-ui/react";
 import { EventsContext } from "../EventsContext";
 
@@ -23,20 +27,48 @@ export const EditEventModal = ({
   onEventUpdated,
 }) => {
   const [editedEvent, setEditedEvent] = useState(event);
-  const { updateEvent } = useContext(EventsContext);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const { updateEvent, categories, setCategories, addCategory } =
+    useContext(EventsContext);
   const toast = useToast();
 
   useEffect(() => {
-    setEditedEvent(event);
+    if (event) {
+      setEditedEvent(event);
+      setSelectedCategories(event.categoryIds || []);
+    }
   }, [event]);
 
   const handleInputChange = (e) => {
-    setEditedEvent({ ...editedEvent, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setEditedEvent({ ...editedEvent, [name]: value });
+  };
+
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategories(selectedCategories.filter((id) => id !== categoryId));
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    const addedCategory = await addCategory({ name: newCategoryName });
+    if (addedCategory && addedCategory.id) {
+      setCategories((prevCategories) => [...prevCategories, addedCategory]);
+      setSelectedCategories((prevSelected) => [
+        ...prevSelected,
+        addedCategory.id,
+      ]);
+      setNewCategoryName("");
+    }
   };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const updatedEvent = { ...editedEvent, id: eventId };
+    const updatedEvent = {
+      ...editedEvent,
+      id: eventId,
+      categoryIds: selectedCategories,
+    };
     try {
       await updateEvent(updatedEvent);
       if (onEventUpdated) {
@@ -60,15 +92,6 @@ export const EditEventModal = ({
       });
     }
   };
-
-  useEffect(() => {
-    if (!isOpen) {
-      // Refresh event page after modal is closed
-      if (onEventUpdated) {
-        onEventUpdated(editedEvent);
-      }
-    }
-  }, [isOpen, onEventUpdated, editedEvent]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -119,6 +142,35 @@ export const EditEventModal = ({
                 value={editedEvent.endTime || ""}
                 onChange={handleInputChange}
               />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Categories</FormLabel>
+              <HStack spacing={2}>
+                {selectedCategories.map((categoryId) => {
+                  const category = categories.find(
+                    (cat) => cat.id === categoryId
+                  );
+                  return category ? (
+                    <Tag key={categoryId} borderRadius="full">
+                      <TagLabel>{category.name}</TagLabel>
+                      <TagCloseButton
+                        onClick={() => handleCategoryChange(categoryId)}
+                      />
+                    </Tag>
+                  ) : null;
+                })}
+              </HStack>
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>New Category</FormLabel>
+              <Input
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Enter new category"
+              />
+              <Button mt={2} colorScheme="blue" onClick={handleAddCategory}>
+                Add
+              </Button>
             </FormControl>
           </ModalBody>
           <ModalFooter>
