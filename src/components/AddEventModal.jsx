@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -31,6 +31,23 @@ export const AddEventModal = ({ isOpen, onClose }) => {
   const { addEvent, users, setUsers, categories, setCategories } =
     useContext(EventsContext);
   const toast = useToast();
+
+  useEffect(() => {
+    if (isOpen) {
+      // Reset form fields when modal opens
+      setFormData({
+        title: "",
+        image: "",
+        description: "",
+        category: "",
+        startTime: "",
+        endTime: "",
+        location: "",
+        createdBy: "",
+        userImage: "",
+      });
+    }
+  }, [isOpen]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

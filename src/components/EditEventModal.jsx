@@ -29,9 +29,16 @@ export const EditEventModal = ({
   const [editedEvent, setEditedEvent] = useState(event);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [userName, setUserName] = useState(""); 
-  const [location, setLocation] = useState(""); 
-  const { updateEvent, categories, setCategories, addCategory, updateUser, users } = useContext(EventsContext);
+  const [userName, setUserName] = useState("");
+  const [location, setLocation] = useState("");
+  const {
+    updateEvent,
+    categories,
+    setCategories,
+    addCategory,
+    updateUser,
+    users,
+  } = useContext(EventsContext);
   const toast = useToast();
 
   useEffect(() => {
@@ -40,21 +47,10 @@ export const EditEventModal = ({
       setSelectedCategories(event.categoryIds || []);
 
       const currentUser = users.find((u) => u.id === event.createdBy);
-      setUserName(currentUser ? currentUser.name : '');
-      setLocation(event.location || '');
+      setUserName(currentUser ? currentUser.name : "");
+      setLocation(event.location || "");
     }
   }, [event, users]);
-
-  useEffect(() => {
-    if (isOpen) {
-      // Reset form fields when modal opens
-      setEditedEvent(event);
-      setSelectedCategories(event.categoryIds || []);
-      setNewCategoryName("");
-      setUserName("");
-      setLocation("");
-    }
-  }, [isOpen, event]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -94,7 +90,10 @@ export const EditEventModal = ({
 
       if (userName !== event.createdBy) {
         const currentUser = users.find((u) => u.id === event.createdBy);
-        await updateUser(event.createdBy, { name: userName, image: currentUser.image });
+        await updateUser(event.createdBy, {
+          name: userName,
+          image: currentUser.image,
+        });
       }
 
       if (onEventUpdated) {
@@ -174,7 +173,11 @@ export const EditEventModal = ({
               <Input
                 type="datetime-local"
                 name="startTime"
-                value={editedEvent.startTime ? editedEvent.startTime.slice(0, 16) : ""}
+                value={
+                  editedEvent.startTime
+                    ? editedEvent.startTime.slice(0, 16)
+                    : ""
+                }
                 onChange={handleInputChange}
               />
             </FormControl>
@@ -183,7 +186,9 @@ export const EditEventModal = ({
               <Input
                 type="datetime-local"
                 name="endTime"
-                value={editedEvent.endTime ? editedEvent.endTime.slice(0, 16) : ""}
+                value={
+                  editedEvent.endTime ? editedEvent.endTime.slice(0, 16) : ""
+                }
                 onChange={handleInputChange}
               />
             </FormControl>
