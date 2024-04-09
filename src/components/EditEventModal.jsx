@@ -30,6 +30,7 @@ export const EditEventModal = ({
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [userName, setUserName] = useState(""); // State voor de gebruikersnaam
+  const [location, setLocation] = useState(""); // State voor de locatie
   const { updateEvent, categories, setCategories, addCategory, updateUser, users } = useContext(EventsContext);
   const toast = useToast();
 
@@ -41,6 +42,7 @@ export const EditEventModal = ({
       // Initialiseren van userName met de huidige gebruikersnaam
       const currentUser = users.find((u) => u.id === event.createdBy);
       setUserName(currentUser ? currentUser.name : '');
+      setLocation(event.location || '');
     }
   }, [event, users]);
 
@@ -74,6 +76,7 @@ export const EditEventModal = ({
       ...editedEvent,
       id: eventId,
       categoryIds: selectedCategories,
+      location: location,
     };
 
     try {
@@ -118,6 +121,14 @@ export const EditEventModal = ({
         <form onSubmit={handleFormSubmit}>
           <ModalBody>
             <FormControl mt={4}>
+              <FormLabel>User Name</FormLabel>
+              <Input
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="User Name"
+              />
+            </FormControl>
+            <FormControl mt={4}>
               <FormLabel>Title</FormLabel>
               <Input
                 name="title"
@@ -134,6 +145,14 @@ export const EditEventModal = ({
               />
             </FormControl>
             <FormControl mt={4}>
+              <FormLabel>Location</FormLabel>
+              <Input
+                name="location"
+                value={location || ""}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+            </FormControl>
+            <FormControl mt={4}>
               <FormLabel>Image URL</FormLabel>
               <Input
                 name="image"
@@ -146,7 +165,7 @@ export const EditEventModal = ({
               <Input
                 type="datetime-local"
                 name="startTime"
-                value={editedEvent.startTime || ""}
+                value={editedEvent.startTime ? editedEvent.startTime.slice(0, 16) : ""}
                 onChange={handleInputChange}
               />
             </FormControl>
@@ -155,7 +174,7 @@ export const EditEventModal = ({
               <Input
                 type="datetime-local"
                 name="endTime"
-                value={editedEvent.endTime || ""}
+                value={editedEvent.endTime ? editedEvent.endTime.slice(0, 16) : ""}
                 onChange={handleInputChange}
               />
             </FormControl>
@@ -187,14 +206,6 @@ export const EditEventModal = ({
               <Button mt={2} colorScheme="blue" onClick={handleAddCategory}>
                 Add
               </Button>
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>User Name</FormLabel>
-              <Input
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder="User Name"
-              />
             </FormControl>
           </ModalBody>
           <ModalFooter>
