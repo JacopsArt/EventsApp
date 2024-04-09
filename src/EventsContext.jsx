@@ -1,4 +1,6 @@
-import React, { createContext, useState, useEffect } from "react";
+// In EventsContext.jsx
+
+import React, { createContext, useState, useEffect, useContext } from "react";
 
 export const EventsContext = createContext();
 
@@ -36,23 +38,38 @@ export const EventsProvider = ({ children }) => {
   };
 
   const updateEvent = async (editedEvent) => {
-    const response = await fetch(`http://localhost:3000/events/${editedEvent.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editedEvent),
-    });
+    const response = await fetch(
+      `http://localhost:3000/events/${editedEvent.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editedEvent),
+      }
+    );
     const updatedEvent = await response.json();
     setEvents((prevEvents) =>
-      prevEvents.map((event) => event.id === updatedEvent.id ? updatedEvent : event)
+      prevEvents.map((event) =>
+        event.id === updatedEvent.id ? updatedEvent : event
+      )
     );
   };
 
-  const deleteEvent = async (eventId) => {
-    await fetch(`http://localhost:3000/events/${eventId}`, {
+  const deleteUser = async (userId) => {
+    await fetch(`http://localhost:3000/users/${userId}`, {
       method: "DELETE",
     });
-    setEvents((prevEvents) =>
-      prevEvents.filter((event) => event.id !== eventId)
+    setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+  };
+
+  const updateUser = async (userId, userData) => {
+    const response = await fetch(`http://localhost:3000/users/${userId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
+    const updatedUser = await response.json();
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
     );
   };
 
@@ -74,7 +91,7 @@ export const EventsProvider = ({ children }) => {
     });
     const addedCategory = await response.json();
     setCategories((prevCategories) => [...prevCategories, addedCategory]);
-    return addedCategory; 
+    return addedCategory;
   };
 
   const contextValue = {
@@ -85,7 +102,8 @@ export const EventsProvider = ({ children }) => {
     categories,
     setCategories,
     updateEvent,
-    deleteEvent,
+    deleteUser,
+    updateUser,
     addEvent,
     addCategory,
   };
@@ -96,3 +114,4 @@ export const EventsProvider = ({ children }) => {
     </EventsContext.Provider>
   );
 };
+

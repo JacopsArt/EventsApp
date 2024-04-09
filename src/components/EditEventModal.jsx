@@ -29,16 +29,20 @@ export const EditEventModal = ({
   const [editedEvent, setEditedEvent] = useState(event);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const { updateEvent, categories, setCategories, addCategory } =
-    useContext(EventsContext);
+  const [userName, setUserName] = useState(""); // State voor de gebruikersnaam
+  const { updateEvent, categories, setCategories, addCategory, updateUser, users } = useContext(EventsContext);
   const toast = useToast();
 
   useEffect(() => {
     if (event) {
       setEditedEvent(event);
       setSelectedCategories(event.categoryIds || []);
+
+      // Initialiseren van userName met de huidige gebruikersnaam
+      const currentUser = users.find((u) => u.id === event.createdBy);
+      setUserName(currentUser ? currentUser.name : '');
     }
-  }, [event]);
+  }, [event, users]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -51,29 +55,40 @@ export const EditEventModal = ({
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
-    const addedCategory = await addCategory({ name: newCategoryName });
-    if (addedCategory && addedCategory.id) {
-      setCategories((prevCategories) => [...prevCategories, addedCategory]);
-      setSelectedCategories((prevSelected) => [
-        ...prevSelected,
-        addedCategory.id,
-      ]);
-      setNewCategoryName("");
+    try {
+      const addedCategory = await addCategory({ name: newCategoryName });
+      if (addedCategory && addedCategory.id) {
+        setCategories([...categories, addedCategory]);
+        setSelectedCategories([...selectedCategories, addedCategory.id]);
+        setNewCategoryName("");
+      }
+    } catch (error) {
+      console.error("Error adding new category:", error);
     }
   };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+
     const updatedEvent = {
       ...editedEvent,
       id: eventId,
       categoryIds: selectedCategories,
     };
+
     try {
       await updateEvent(updatedEvent);
+
+      // Update user name if it has changed
+      if (userName !== event.createdBy) {
+        const currentUser = users.find((u) => u.id === event.createdBy);
+        await updateUser(event.createdBy, { name: userName, image: currentUser.image });
+      }
+
       if (onEventUpdated) {
         onEventUpdated(updatedEvent);
       }
+
       toast({
         title: "Event Updated",
         description: "The event has been successfully updated.",
@@ -81,6 +96,7 @@ export const EditEventModal = ({
         duration: 5000,
         isClosable: true,
       });
+
       onClose();
     } catch (error) {
       toast({
@@ -171,6 +187,14 @@ export const EditEventModal = ({
               <Button mt={2} colorScheme="blue" onClick={handleAddCategory}>
                 Add
               </Button>
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>User Name</FormLabel>
+              <Input
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="User Name"
+              />
             </FormControl>
           </ModalBody>
           <ModalFooter>
