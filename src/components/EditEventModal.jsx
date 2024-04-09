@@ -29,8 +29,8 @@ export const EditEventModal = ({
   const [editedEvent, setEditedEvent] = useState(event);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [userName, setUserName] = useState(""); // State voor de gebruikersnaam
-  const [location, setLocation] = useState(""); // State voor de locatie
+  const [userName, setUserName] = useState(""); 
+  const [location, setLocation] = useState(""); 
   const { updateEvent, categories, setCategories, addCategory, updateUser, users } = useContext(EventsContext);
   const toast = useToast();
 
@@ -39,12 +39,22 @@ export const EditEventModal = ({
       setEditedEvent(event);
       setSelectedCategories(event.categoryIds || []);
 
-      // Initialiseren van userName met de huidige gebruikersnaam
       const currentUser = users.find((u) => u.id === event.createdBy);
       setUserName(currentUser ? currentUser.name : '');
       setLocation(event.location || '');
     }
   }, [event, users]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Reset form fields when modal opens
+      setEditedEvent(event);
+      setSelectedCategories(event.categoryIds || []);
+      setNewCategoryName("");
+      setUserName("");
+      setLocation("");
+    }
+  }, [isOpen, event]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -82,7 +92,6 @@ export const EditEventModal = ({
     try {
       await updateEvent(updatedEvent);
 
-      // Update user name if it has changed
       if (userName !== event.createdBy) {
         const currentUser = users.find((u) => u.id === event.createdBy);
         await updateUser(event.createdBy, { name: userName, image: currentUser.image });
