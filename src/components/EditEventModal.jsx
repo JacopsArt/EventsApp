@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import PropTypes from "prop-types";
 import {
   Modal,
   ModalOverlay,
@@ -236,4 +237,12 @@ export const EditEventModal = ({
       </ModalContent>
     </Modal>
   );
+};
+
+EditEventModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  event: PropTypes.object.isRequired,
+  eventId: PropTypes.string.isRequired,
+  onEventUpdated: PropTypes.func,
 };
