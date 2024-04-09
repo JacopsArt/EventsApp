@@ -4,9 +4,9 @@ import { Input, Box } from "@chakra-ui/react";
 const SearchInput = ({ value, onChange }) => {
   return (
     <Box mx="auto" width={{ base: "80%", md: "40%", lg: "20%" }}>
-      {" "}
-  
       <Input
+        id="search-events"
+        name="search-events"
         placeholder="Search events"
         value={value}
         onChange={onChange}
@@ -15,5 +15,6 @@ const SearchInput = ({ value, onChange }) => {
     </Box>
   );
 };
+
 
 export default SearchInput;

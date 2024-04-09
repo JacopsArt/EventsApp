@@ -193,7 +193,7 @@ export const EditEventModal = ({
               />
             </FormControl>
             <FormControl mt={4}>
-              <FormLabel>Categories</FormLabel>
+              <FormLabel htmlFor="newCategoryName">Categories</FormLabel>
               <HStack spacing={2}>
                 {selectedCategories.map((categoryId) => {
                   const category = categories.find(
@@ -210,9 +210,11 @@ export const EditEventModal = ({
                 })}
               </HStack>
             </FormControl>
+
             <FormControl mt={4}>
-              <FormLabel>New Category</FormLabel>
+              <FormLabel htmlFor="newCategoryName">New Category</FormLabel>
               <Input
+                id="newCategoryName"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 placeholder="Enter new category"

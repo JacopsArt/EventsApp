@@ -15,6 +15,8 @@ const CategoryFilter = ({ value, onChange, categories }) => {
   return (
     <Box mx="auto" width={{ base: "80%", md: "40%", lg: "20%" }}>
       <Input
+        id="category-filter"
+        name="category-filter"
         placeholder="Category"
         value={value}
         onChange={handleChange}
@@ -23,5 +25,6 @@ const CategoryFilter = ({ value, onChange, categories }) => {
     </Box>
   );
 };
+
 
 export default CategoryFilter;
